@@ -87,62 +87,62 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
         <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* Floating Glass Navbar */}
-      <header className="sticky top-0 z-30 pt-4 pb-2 transition-all duration-300">
-        <div className="px-4">
-            <div className="glass-panel rounded-2xl shadow-lg border-white/40 p-3 flex justify-between items-center max-w-md mx-auto">
-            <div className="flex items-center gap-3">
-                <div className={`bg-gradient-to-br ${activeGradient} p-2 rounded-xl text-white shadow-lg transition-all duration-500`}>
-                <Sparkles size={20} className="animate-pulse-fast" />
+      {/* Sticky Header with Blur */}
+      <header className="sticky top-0 z-30 bg-white/60 backdrop-blur-xl border-b border-white/30 shadow-sm transition-all duration-300">
+        <div className="max-w-md mx-auto w-full">
+            <div className="px-4 py-3 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                    <div className={`bg-gradient-to-br ${activeGradient} p-2 rounded-xl text-white shadow-lg transition-all duration-500`}>
+                    <Sparkles size={20} className="animate-pulse-fast" />
+                    </div>
+                    <div className="flex flex-col">
+                    <h1 className="text-xl font-extrabold text-slate-800 leading-none tracking-tight">
+                        FRESHER '25
+                    </h1>
+                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Vote Now</span>
+                    </div>
                 </div>
-                <div className="flex flex-col">
-                <h1 className="text-xl font-extrabold text-slate-800 leading-none tracking-tight">
-                    FRESHER '25
-                </h1>
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Vote Now</span>
+                <button onClick={onAdminClick} className="text-slate-400 hover:text-indigo-600 transition-colors bg-white/50 p-2 rounded-full">
+                    <Lock size={18} />
+                </button>
+            </div>
+            
+            {/* Category Selector with Fixed Height Container to prevent jumping */}
+            <div className="relative h-16 w-full">
+                <div className="absolute inset-0 flex overflow-x-auto no-scrollbar gap-3 px-4 items-center">
+                    {CATEGORIES.map(cat => {
+                    const isVoted = votedCategories[cat.id];
+                    const isActive = activeCategory === cat.id;
+                    const gradient = getGradient(cat.id);
+                    
+                    return (
+                        <button
+                        key={cat.id}
+                        onClick={() => setActiveCategory(cat.id)}
+                        className={`
+                            relative whitespace-nowrap px-5 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2 flex-shrink-0
+                            ${isActive 
+                            ? `bg-gradient-to-r ${gradient} text-white shadow-lg scale-105 ring-2 ring-white z-10` 
+                            : 'bg-white/80 text-slate-500 hover:bg-white'
+                            }
+                            ${isVoted && !isActive ? 'opacity-60 grayscale' : ''}
+                        `}
+                        >
+                        {getIcon(cat.id)}
+                        {cat.label}
+                        {isActive && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>}
+                        </button>
+                    );
+                    })}
+                    {/* Large spacer to ensure last item is fully visible and touchable */}
+                    <div className="w-8 flex-shrink-0 h-1"></div>
                 </div>
-            </div>
-            <button onClick={onAdminClick} className="text-slate-400 hover:text-indigo-600 transition-colors bg-white/50 p-2 rounded-full">
-                <Lock size={18} />
-            </button>
-            </div>
-        </div>
-        
-        {/* Category Selector with Fixed Height Container to prevent jumping */}
-        <div className="mt-4 max-w-md mx-auto relative h-16">
-            <div className="absolute inset-0 flex overflow-x-auto no-scrollbar gap-3 px-4 items-center">
-                {CATEGORIES.map(cat => {
-                const isVoted = votedCategories[cat.id];
-                const isActive = activeCategory === cat.id;
-                const gradient = getGradient(cat.id);
-                
-                return (
-                    <button
-                    key={cat.id}
-                    onClick={() => setActiveCategory(cat.id)}
-                    className={`
-                        relative whitespace-nowrap px-5 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2 flex-shrink-0
-                        ${isActive 
-                        ? `bg-gradient-to-r ${gradient} text-white shadow-lg scale-105 ring-2 ring-white z-10` 
-                        : 'bg-white/80 text-slate-500 hover:bg-white'
-                        }
-                        ${isVoted && !isActive ? 'opacity-60 grayscale' : ''}
-                    `}
-                    >
-                    {getIcon(cat.id)}
-                    {cat.label}
-                    {isActive && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>}
-                    </button>
-                );
-                })}
-                {/* Large spacer to ensure last item is fully visible and touchable */}
-                <div className="w-8 flex-shrink-0 h-1"></div>
             </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto px-4 mt-2">
+      <main className="max-w-md mx-auto px-4 mt-6">
         <div className="mb-6 text-center animate-fade-in">
            {votedCategories[activeCategory] ? (
              <div className="glass-panel inline-flex items-center gap-2 px-6 py-2 rounded-full text-emerald-600 font-bold shadow-sm">
@@ -237,13 +237,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
                  </h3>
                </div>
 
-               {selectedCandidate.quote && (
-                 <div className="mb-6 p-5 bg-slate-50 rounded-2xl border-2 border-slate-100 text-slate-600 text-center relative italic font-medium">
-                   <span className="text-4xl absolute -top-4 left-4 opacity-20">"</span>
-                   {selectedCandidate.quote}
-                   <span className="text-4xl absolute -bottom-6 right-4 opacity-20">"</span>
-                 </div>
-               )}
+               {/* Removed Quote Section */}
 
                <div className="mt-auto space-y-3 pb-4">
                   <button
