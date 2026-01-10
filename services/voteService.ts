@@ -1,7 +1,7 @@
 import { VoteState, UserVotes } from '../types';
 
 const USER_VOTE_KEY = 'it_fresher_user_votes';
-const API_URL = '/api.php'; // Relative path works if hosted on same domain
+const API_URL = '/api'; // Proxied to Node server
 
 export const getUserVotes = (): UserVotes => {
   const stored = localStorage.getItem(USER_VOTE_KEY);
@@ -20,8 +20,8 @@ export const castVote = async (candidateId: string, categoryId: string): Promise
   }
 
   try {
-    // 2. Send vote to VPS Backend
-    const response = await fetch(`${API_URL}?action=vote`, {
+    // 2. Send vote to Node.js Backend
+    const response = await fetch(`${API_URL}/vote`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,14 +32,11 @@ export const castVote = async (candidateId: string, categoryId: string): Promise
     if (!response.ok) {
         const text = await response.text();
         console.error(`API Error (${response.status}):`, text);
-        
-        // Try to parse clean error message from PHP
         try {
             const json = JSON.parse(text);
             alert(`Server Error: ${json.error}`);
         } catch (e) {
-            // If it's a raw PHP crash (HTML), show a summary
-            alert(`Server Error (${response.status}): The backend crashed. Check the console for details.`);
+            alert(`Server Error (${response.status}). Ensure "npm run server" is running.`);
         }
         return false;
     }
@@ -54,12 +51,12 @@ export const castVote = async (candidateId: string, categoryId: string): Promise
       return true;
     } else {
       console.error('Vote failed:', data.error);
-      alert('Failed to record vote: ' + data.error);
+      alert('Failed to record vote: ' + (data.error || 'Unknown error'));
       return false;
     }
   } catch (error) {
     console.error('Network Error:', error);
-    alert('Network error. Ensure "php -S localhost:8000 -t public" is running in a separate terminal.');
+    alert('Network error. Ensure "npm run server" is running in a separate terminal.');
     return false;
   }
 };
@@ -70,7 +67,7 @@ export const subscribeToVotes = (callback: (votes: VoteState | ((prev: VoteState
   const fetchStats = async () => {
     if (!isMounted) return;
     try {
-      const response = await fetch(`${API_URL}?action=stats`);
+      const response = await fetch(`${API_URL}/stats`);
       if (response.ok) {
         const data: VoteState = await response.json();
         callback(data);
@@ -83,7 +80,7 @@ export const subscribeToVotes = (callback: (votes: VoteState | ((prev: VoteState
   // Initial fetch
   fetchStats();
 
-  // Poll every 3 seconds (Simple & Robust for VPS)
+  // Poll every 3 seconds
   const intervalId = setInterval(fetchStats, 3000);
 
   return () => {
@@ -97,7 +94,7 @@ export const resetAllVotes = async () => {
   if (!confirmed) return;
 
   try {
-    const response = await fetch(`${API_URL}?action=reset`, { method: 'POST' });
+    const response = await fetch(`${API_URL}/reset`, { method: 'POST' });
     const data = await response.json();
 
     if (data.success) {
@@ -108,6 +105,6 @@ export const resetAllVotes = async () => {
     }
   } catch (error) {
     console.error(error);
-    alert('Error connecting to backend.');
+    alert('Error connecting to backend. Is the server running?');
   }
 };

@@ -26,7 +26,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
   // Optimized Data Processing
   const dashboardData = useMemo(() => {
-    const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
+    const totalVotes = Object.values(votes).reduce((a: number, b: number) => a + b, 0);
 
     // Process categories with sorted candidates
     const categoryStats = CATEGORIES.map(category => {
