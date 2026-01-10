@@ -88,50 +88,56 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
       </div>
 
       {/* Floating Glass Navbar */}
-      <header className="sticky top-0 z-30 pt-4 px-4 pb-2">
-        <div className="glass-panel rounded-2xl shadow-lg border-white/40 p-3 flex justify-between items-center max-w-md mx-auto">
-          <div className="flex items-center gap-3">
-            <div className={`bg-gradient-to-br ${activeGradient} p-2 rounded-xl text-white shadow-lg`}>
-              <Sparkles size={20} className="animate-pulse-fast" />
+      <header className="sticky top-0 z-30 pt-4 pb-2 transition-all duration-300">
+        <div className="px-4">
+            <div className="glass-panel rounded-2xl shadow-lg border-white/40 p-3 flex justify-between items-center max-w-md mx-auto">
+            <div className="flex items-center gap-3">
+                <div className={`bg-gradient-to-br ${activeGradient} p-2 rounded-xl text-white shadow-lg transition-all duration-500`}>
+                <Sparkles size={20} className="animate-pulse-fast" />
+                </div>
+                <div className="flex flex-col">
+                <h1 className="text-xl font-extrabold text-slate-800 leading-none tracking-tight">
+                    FRESHER '25
+                </h1>
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Vote Now</span>
+                </div>
             </div>
-            <div className="flex flex-col">
-              <h1 className="text-xl font-extrabold text-slate-800 leading-none tracking-tight">
-                FRESHER '25
-              </h1>
-              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Vote Now</span>
+            <button onClick={onAdminClick} className="text-slate-400 hover:text-indigo-600 transition-colors bg-white/50 p-2 rounded-full">
+                <Lock size={18} />
+            </button>
             </div>
-          </div>
-          <button onClick={onAdminClick} className="text-slate-400 hover:text-indigo-600 transition-colors bg-white/50 p-2 rounded-full">
-            <Lock size={18} />
-          </button>
         </div>
         
-        {/* Bouncy Category Selector */}
-        <div className="mt-4 flex overflow-x-auto no-scrollbar gap-3 snap-x max-w-md mx-auto px-4 py-3 pb-4">
-            {CATEGORIES.map(cat => {
-              const isVoted = votedCategories[cat.id];
-              const isActive = activeCategory === cat.id;
-              const gradient = getGradient(cat.id);
-              
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`
-                    relative whitespace-nowrap px-5 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 snap-start flex items-center gap-2
-                    ${isActive 
-                      ? `bg-gradient-to-r ${gradient} text-white shadow-lg scale-105 ring-2 ring-white` 
-                      : 'bg-white/80 text-slate-500 hover:bg-white'
-                    }
-                    ${isVoted && !isActive ? 'opacity-60 grayscale' : ''}
-                  `}
-                >
-                  {getIcon(cat.id)}
-                  {cat.label}
-                  {isActive && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>}
-                </button>
-              );
-            })}
+        {/* Category Selector with Fixed Height Container to prevent jumping */}
+        <div className="mt-4 max-w-md mx-auto relative h-16">
+            <div className="absolute inset-0 flex overflow-x-auto no-scrollbar gap-3 px-4 items-center">
+                {CATEGORIES.map(cat => {
+                const isVoted = votedCategories[cat.id];
+                const isActive = activeCategory === cat.id;
+                const gradient = getGradient(cat.id);
+                
+                return (
+                    <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`
+                        relative whitespace-nowrap px-5 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2 flex-shrink-0
+                        ${isActive 
+                        ? `bg-gradient-to-r ${gradient} text-white shadow-lg scale-105 ring-2 ring-white z-10` 
+                        : 'bg-white/80 text-slate-500 hover:bg-white'
+                        }
+                        ${isVoted && !isActive ? 'opacity-60 grayscale' : ''}
+                    `}
+                    >
+                    {getIcon(cat.id)}
+                    {cat.label}
+                    {isActive && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>}
+                    </button>
+                );
+                })}
+                {/* Large spacer to ensure last item is fully visible and touchable */}
+                <div className="w-8 flex-shrink-0 h-1"></div>
+            </div>
         </div>
       </header>
 
