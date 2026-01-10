@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CATEGORIES, CANDIDATES } from '../constants';
 import { CategoryId, Candidate } from '../types';
 import { castVote, hasVotedInCategory } from '../services/voteService';
-import { CheckCircle2, ChevronRight, Lock, GraduationCap, X } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Lock, GraduationCap, X, AlertTriangle } from 'lucide-react';
 
 interface VotingInterfaceProps {
   onAdminClick: () => void;
@@ -12,6 +12,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
   const [activeCategory, setActiveCategory] = useState<CategoryId>(CategoryId.KING);
   const [votedCategories, setVotedCategories] = useState<Record<string, boolean>>({});
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -28,6 +29,10 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
     setSelectedCandidate(candidate);
   };
 
+  const handleInitiateVote = () => {
+    setShowConfirmModal(true);
+  };
+
   const confirmVote = async () => {
     if (!selectedCandidate) return;
     
@@ -36,6 +41,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
     
     if (success) {
       setVotedCategories(prev => ({ ...prev, [activeCategory]: true }));
+      setShowConfirmModal(false); // Close confirmation immediately
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
@@ -46,7 +52,8 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
   };
 
   const filteredCandidates = CANDIDATES.filter(c => c.categoryId === activeCategory);
-  const currentCategoryColor = CATEGORIES.find(c => c.id === activeCategory)?.color || 'bg-uni-600';
+  const currentCategory = CATEGORIES.find(c => c.id === activeCategory);
+  const currentCategoryColor = currentCategory?.color || 'bg-uni-600';
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24 relative overflow-x-hidden font-sans">
@@ -102,7 +109,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
       <main className="max-w-md mx-auto px-4 py-6">
         <div className="mb-6 text-center">
           <h2 className={`text-2xl font-black uppercase tracking-tight ${currentCategoryColor.replace('bg-', 'text-')}`}>
-            {CATEGORIES.find(c => c.id === activeCategory)?.label}
+            {currentCategory?.label}
           </h2>
           {votedCategories[activeCategory] ? (
             <div className="inline-block mt-2 px-4 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold shadow-sm">
@@ -150,9 +157,12 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
         </div>
       </main>
 
-      {/* Expanded Profile / Confirmation Sheet */}
+      {/* Expanded Profile Sheet */}
       {selectedCandidate && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/80 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedCandidate(null)}>
+        <div 
+          className="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/60 backdrop-blur-sm animate-fade-in" 
+          onClick={() => setSelectedCandidate(null)}
+        >
           <div 
             className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl animate-slide-up max-h-[95vh] overflow-y-auto flex flex-col no-scrollbar"
             onClick={e => e.stopPropagation()}
@@ -183,29 +193,26 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
                 {/* Drag Handle */}
                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 shrink-0" />
 
-               <h3 className="text-3xl font-black text-slate-800 leading-tight mb-8 text-center">
+               <h3 className="text-3xl font-black text-slate-800 leading-tight mb-2 text-center">
                   {selectedCandidate.name}
                </h3>
+               <p className="text-center text-slate-500 font-medium mb-6">{selectedCandidate.class}</p>
 
-               <div className="mt-auto space-y-3">
+               {selectedCandidate.quote && (
+                 <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-100 italic text-slate-600 text-center relative">
+                   "{selectedCandidate.quote}"
+                 </div>
+               )}
+
+               <div className="mt-auto space-y-3 pt-4">
                   <button
-                    onClick={confirmVote}
-                    disabled={isSubmitting}
+                    onClick={handleInitiateVote}
                     className={`
                       w-full py-4 rounded-xl font-bold text-white shadow-xl shadow-blue-900/10 transition-transform active:scale-[0.98] flex items-center justify-center gap-3 text-lg
-                      ${currentCategoryColor} hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed
+                      ${currentCategoryColor} hover:opacity-90
                     `}
                   >
-                    {isSubmitting ? (
-                      <span className="flex items-center gap-2">
-                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Casting Vote...
-                      </span>
-                    ) : (
-                      <>
-                        Vote for {selectedCandidate.name.split(' ')[0]} <ChevronRight size={20} />
-                      </>
-                    )}
+                    Vote for {selectedCandidate.name.split(' ')[0]} <ChevronRight size={20} />
                   </button>
                </div>
             </div>
@@ -213,15 +220,54 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
         </div>
       )}
 
+      {/* Confirmation Modal */}
+      {showConfirmModal && selectedCandidate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-scale-up border border-slate-100">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Confirm Your Vote</h3>
+              <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+                You are about to vote for <span className="font-bold text-slate-900">{selectedCandidate.name}</span> as <span className="font-bold text-slate-900">{currentCategory?.label}</span>. 
+                <br /><br />
+                <span className="text-xs text-slate-400">This action cannot be undone.</span>
+              </p>
+              
+              <div className="flex gap-3 w-full">
+                <button 
+                  onClick={() => setShowConfirmModal(false)}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmVote}
+                  disabled={isSubmitting}
+                  className={`flex-1 py-3 px-4 rounded-xl font-bold text-white transition-all shadow-md active:scale-95 flex justify-center items-center ${currentCategoryColor}`}
+                >
+                  {isSubmitting ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    "Confirm"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Success Overlay */}
       {showSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/95 animate-fade-in">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white/95 animate-fade-in">
           <div className="text-center p-8 max-w-xs w-full animate-slide-up">
             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
               <CheckCircle2 size={40} className="text-emerald-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Vote Recorded</h2>
-            <p className="text-slate-500 text-sm">Thank you for participating in the fresher welcome.</p>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Vote Recorded!</h2>
+            <p className="text-slate-500 text-sm">Thank you for voting in the <br/><strong>{currentCategory?.label}</strong> category.</p>
           </div>
         </div>
       )}
