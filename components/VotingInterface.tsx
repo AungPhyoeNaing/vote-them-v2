@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CATEGORIES, CANDIDATES } from '../constants';
 import { CategoryId, Candidate } from '../types';
 import { castVote, hasVotedInCategory } from '../services/voteService';
-import { CheckCircle2, ChevronRight, Lock, GraduationCap, X, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Lock, Sparkles, X, Heart, Star, Crown, Zap } from 'lucide-react';
 
 interface VotingInterfaceProps {
   onAdminClick: () => void;
@@ -46,173 +46,208 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
       setTimeout(() => {
         setShowSuccess(false);
         setSelectedCandidate(null);
-      }, 2000);
+      }, 2500);
     }
     setIsSubmitting(false);
   };
 
   const filteredCandidates = CANDIDATES.filter(c => c.categoryId === activeCategory);
   const currentCategory = CATEGORIES.find(c => c.id === activeCategory);
-  const currentCategoryColor = currentCategory?.color || 'bg-uni-600';
+  
+  // Dynamic gradient based on category
+  const getGradient = (catId: string) => {
+    switch(catId) {
+      case CategoryId.KING: return 'from-blue-400 to-indigo-600 shadow-blue-400/50';
+      case CategoryId.QUEEN: return 'from-pink-400 to-rose-600 shadow-pink-400/50';
+      case CategoryId.MISTER: return 'from-teal-400 to-emerald-600 shadow-teal-400/50';
+      case CategoryId.MISS: return 'from-violet-400 to-purple-600 shadow-purple-400/50';
+      default: return 'from-slate-400 to-slate-600';
+    }
+  };
+
+  const getIcon = (catId: string) => {
+    switch(catId) {
+      case CategoryId.KING: return <Crown size={14} />;
+      case CategoryId.QUEEN: return <Star size={14} />;
+      case CategoryId.MISTER: return <Zap size={14} />;
+      case CategoryId.MISS: return <Heart size={14} />;
+      default: return <Sparkles size={14} />;
+    }
+  }
+
+  const activeGradient = getGradient(activeCategory);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 relative overflow-x-hidden font-sans">
-      {/* Navbar */}
-      <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="bg-uni-600 p-1.5 rounded text-white shadow-sm">
-              <GraduationCap size={20} />
+    <div className="min-h-screen bg-mesh relative overflow-x-hidden font-sans pb-24">
+      
+      {/* Background Decorative Blobs */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+      </div>
+
+      {/* Floating Glass Navbar */}
+      <header className="sticky top-0 z-30 pt-4 px-4 pb-2">
+        <div className="glass-panel rounded-2xl shadow-lg border-white/40 p-3 flex justify-between items-center max-w-md mx-auto">
+          <div className="flex items-center gap-3">
+            <div className={`bg-gradient-to-br ${activeGradient} p-2 rounded-xl text-white shadow-lg`}>
+              <Sparkles size={20} className="animate-pulse-fast" />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-lg font-bold text-slate-800 leading-none tracking-tight">
-                IT Fresher '25
+              <h1 className="text-xl font-extrabold text-slate-800 leading-none tracking-tight">
+                FRESHER '25
               </h1>
-              <span className="text-[10px] uppercase font-bold text-uni-600 tracking-wider">Official Voting</span>
+              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Vote Now</span>
             </div>
           </div>
-          <button onClick={onAdminClick} className="text-slate-300 hover:text-uni-600 transition-colors p-2">
-            <Lock size={16} />
+          <button onClick={onAdminClick} className="text-slate-400 hover:text-indigo-600 transition-colors bg-white/50 p-2 rounded-full">
+            <Lock size={18} />
           </button>
         </div>
         
-        {/* Category Pill Navigation */}
-        <div className="bg-white border-b border-slate-100">
-          <div className="flex overflow-x-auto no-scrollbar py-3 px-4 gap-3 snap-x max-w-md mx-auto">
+        {/* Bouncy Category Selector */}
+        <div className="mt-4 flex overflow-x-auto no-scrollbar gap-3 snap-x max-w-md mx-auto px-1 py-2">
             {CATEGORIES.map(cat => {
               const isVoted = votedCategories[cat.id];
               const isActive = activeCategory === cat.id;
+              const gradient = getGradient(cat.id);
               
               return (
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
                   className={`
-                    whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-semibold transition-all snap-start border flex items-center gap-1
+                    relative whitespace-nowrap px-5 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 snap-start flex items-center gap-2
                     ${isActive 
-                      ? `${cat.color} text-white border-transparent shadow-md transform scale-105` 
-                      : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                      ? `bg-gradient-to-r ${gradient} text-white shadow-lg scale-105 ring-2 ring-white` 
+                      : 'bg-white/80 text-slate-500 hover:bg-white'
                     }
-                    ${isVoted && !isActive ? 'bg-slate-100 text-slate-400 border-slate-100' : ''}
+                    ${isVoted && !isActive ? 'opacity-60 grayscale' : ''}
                   `}
                 >
+                  {getIcon(cat.id)}
                   {cat.label}
-                  {isVoted && <CheckCircle2 size={12} className="inline" />}
+                  {isActive && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>}
                 </button>
               );
             })}
-          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto px-4 py-6">
-        <div className="mb-6 text-center">
-          <h2 className={`text-2xl font-black uppercase tracking-tight ${currentCategoryColor.replace('bg-', 'text-')}`}>
-            {currentCategory?.label}
-          </h2>
-          {votedCategories[activeCategory] ? (
-            <div className="inline-block mt-2 px-4 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold shadow-sm">
-               ✓ Vote Registered
-            </div>
-          ) : (
-            <p className="text-slate-500 text-sm mt-1 font-medium">Select a candidate to view profile</p>
-          )}
+      <main className="max-w-md mx-auto px-4 mt-2">
+        <div className="mb-6 text-center animate-fade-in">
+           {votedCategories[activeCategory] ? (
+             <div className="glass-panel inline-flex items-center gap-2 px-6 py-2 rounded-full text-emerald-600 font-bold shadow-sm">
+                <CheckCircle2 size={18} className="fill-emerald-100" /> Vote Registered
+             </div>
+           ) : (
+             <p className="text-slate-600 font-medium bg-white/30 inline-block px-4 py-1 rounded-full text-sm backdrop-blur-sm">
+               Tap a card to view profile
+             </p>
+           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 pb-10">
           {filteredCandidates.map((candidate, idx) => (
             <div 
               key={candidate.id}
               onClick={() => handleVote(candidate)}
               className={`
-                group rounded-xl overflow-hidden cursor-pointer transition-all duration-300 animate-slide-up bg-white border border-slate-200 shadow-sm
-                ${votedCategories[activeCategory] ? 'opacity-50 grayscale pointer-events-none' : 'hover:-translate-y-1 hover:shadow-lg'}
+                relative group rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 animate-slide-up bg-white shadow-md border-4 border-white
+                ${votedCategories[activeCategory] ? 'opacity-50 grayscale pointer-events-none' : 'hover:-translate-y-2 hover:shadow-2xl hover:rotate-1'}
               `}
-              style={{ animationDelay: `${idx * 0.05}s` }}
+              style={{ animationDelay: `${idx * 0.1}s` }}
             >
-              <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden">
+              {/* Image Container */}
+              <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden rounded-2xl">
                 <img 
                   src={candidate.imageUrl} 
                   alt={candidate.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   loading="lazy"
                 />
-                <div className="absolute top-2 left-2 bg-white/95 text-slate-900 text-xs font-bold px-2.5 py-1 rounded shadow-sm border border-slate-100">
+                
+                {/* Number Badge */}
+                <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-md text-slate-900 text-xs font-black px-2 py-1 rounded-lg shadow-sm">
                   #{candidate.number}
                 </div>
+
+                {/* Gradient Overlay on Hover */}
+                <div className={`absolute inset-0 bg-gradient-to-t ${activeGradient} opacity-0 group-hover:opacity-40 transition-opacity duration-300`} />
               </div>
               
-              <div className="p-3 bg-white">
-                <p className="text-slate-800 font-bold truncate text-sm">{candidate.name}</p>
-                <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mt-0.5">{candidate.class}</p>
+              <div className="p-3 text-center">
+                <h3 className="text-slate-800 font-extrabold truncate text-sm">{candidate.name}</h3>
+                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider bg-slate-100 inline-block px-2 py-0.5 rounded-md mt-1">
+                  {candidate.class}
+                </p>
               </div>
-              
-              {/* Selection Border */}
-              {selectedCandidate?.id === candidate.id && (
-                <div className={`absolute inset-0 border-[3px] border-${currentCategoryColor.split('-')[1]}-600 z-10 rounded-xl pointer-events-none`} />
-              )}
             </div>
           ))}
         </div>
       </main>
 
-      {/* Expanded Profile Sheet */}
+      {/* Fun Expanded Profile Modal */}
       {selectedCandidate && (
         <div 
-          className="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/60 backdrop-blur-sm animate-fade-in" 
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-md animate-fade-in p-0 sm:p-4" 
           onClick={() => setSelectedCandidate(null)}
         >
           <div 
-            className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl animate-slide-up max-h-[95vh] overflow-y-auto flex flex-col no-scrollbar"
+            className="bg-white w-full max-w-sm sm:rounded-3xl rounded-t-3xl shadow-2xl animate-slide-up flex flex-col max-h-[90vh] overflow-hidden relative ring-4 ring-white"
             onClick={e => e.stopPropagation()}
           >
-            {/* Close Button Floating */}
+            {/* Background Blob in Modal */}
+            <div className={`absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br ${activeGradient} rounded-full opacity-20 blur-3xl pointer-events-none`} />
+
+            {/* Close Button */}
             <button 
               onClick={() => setSelectedCandidate(null)}
-              className="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors"
+              className="absolute top-4 right-4 z-20 bg-white/50 hover:bg-white text-slate-800 p-2 rounded-full backdrop-blur-md transition-all shadow-sm"
             >
                 <X size={24} />
             </button>
 
-            {/* Big Image Section */}
-            <div className="w-full aspect-[3/4] relative shrink-0">
+            {/* Image */}
+            <div className="w-full aspect-square relative shrink-0">
                <img 
                  src={selectedCandidate.imageUrl} 
                  className="w-full h-full object-cover"
                  alt={selectedCandidate.name}
                />
-               <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
-               <div className="absolute top-4 left-4 bg-white/90 backdrop-blur text-slate-900 px-3 py-1 rounded-full text-lg font-bold shadow-lg border border-white/50">
-                  #{selectedCandidate.number}
-               </div>
+               <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-white via-white/80 to-transparent" />
             </div>
 
-            {/* Content Section (Overlapping Image slightly) */}
-            <div className="p-6 flex flex-col bg-white relative -mt-8 rounded-t-3xl">
-                {/* Drag Handle */}
-               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 shrink-0" />
-
-               <h3 className="text-3xl font-black text-slate-800 leading-tight mb-2 text-center">
-                  {selectedCandidate.name}
-               </h3>
-               <p className="text-center text-slate-500 font-medium mb-6">{selectedCandidate.class}</p>
+            {/* Content */}
+            <div className="p-6 pt-0 flex flex-col relative z-10 -mt-10 overflow-y-auto no-scrollbar">
+               <div className="text-center">
+                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r ${activeGradient} mb-3 shadow-md`}>
+                    #{selectedCandidate.number} • {selectedCandidate.class}
+                 </span>
+                 <h3 className="text-3xl font-black text-slate-900 leading-none mb-4">
+                    {selectedCandidate.name}
+                 </h3>
+               </div>
 
                {selectedCandidate.quote && (
-                 <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-100 italic text-slate-600 text-center relative">
-                   "{selectedCandidate.quote}"
+                 <div className="mb-6 p-5 bg-slate-50 rounded-2xl border-2 border-slate-100 text-slate-600 text-center relative italic font-medium">
+                   <span className="text-4xl absolute -top-4 left-4 opacity-20">"</span>
+                   {selectedCandidate.quote}
+                   <span className="text-4xl absolute -bottom-6 right-4 opacity-20">"</span>
                  </div>
                )}
 
-               <div className="mt-auto space-y-3 pt-4">
+               <div className="mt-auto space-y-3 pb-4">
                   <button
                     onClick={handleInitiateVote}
                     className={`
-                      w-full py-4 rounded-xl font-bold text-white shadow-xl shadow-blue-900/10 transition-transform active:scale-[0.98] flex items-center justify-center gap-3 text-lg
-                      ${currentCategoryColor} hover:opacity-90
+                      w-full py-4 rounded-2xl font-bold text-white shadow-xl bg-gradient-to-r ${activeGradient} 
+                      hover:scale-[1.02] active:scale-[0.95] transition-all flex items-center justify-center gap-2 text-lg
                     `}
                   >
-                    Vote for {selectedCandidate.name.split(' ')[0]} <ChevronRight size={20} />
+                    <Star className="fill-white" size={20} /> VOTE NOW
                   </button>
                </div>
             </div>
@@ -222,35 +257,38 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
 
       {/* Confirmation Modal */}
       {showConfirmModal && selectedCandidate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-scale-up border border-slate-100">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-4">
-                <AlertTriangle size={32} />
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-6 animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-xs p-6 shadow-2xl animate-slide-up border-4 border-white relative overflow-hidden">
+             {/* Decorative */}
+             <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${activeGradient}`} />
+            
+            <div className="flex flex-col items-center text-center mt-2">
+              <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg mb-4 overflow-hidden">
+                 <img src={selectedCandidate.imageUrl} className="w-full h-full object-cover" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Confirm Your Vote</h3>
-              <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-                You are about to vote for <span className="font-bold text-slate-900">{selectedCandidate.name}</span> as <span className="font-bold text-slate-900">{currentCategory?.label}</span>. 
-                <br /><br />
-                <span className="text-xs text-slate-400">This action cannot be undone.</span>
+              
+              <h3 className="text-2xl font-black text-slate-900 mb-1">Are you sure?</h3>
+              <p className="text-slate-500 text-sm mb-6 font-medium">
+                Voting for <span className={`text-transparent bg-clip-text bg-gradient-to-r ${activeGradient} font-bold`}>{selectedCandidate.name}</span>
+                <br/> in {currentCategory?.label} category.
               </p>
               
               <div className="flex gap-3 w-full">
                 <button 
                   onClick={() => setShowConfirmModal(false)}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
                 >
-                  Cancel
+                  Nope
                 </button>
                 <button 
                   onClick={confirmVote}
                   disabled={isSubmitting}
-                  className={`flex-1 py-3 px-4 rounded-xl font-bold text-white transition-all shadow-md active:scale-95 flex justify-center items-center ${currentCategoryColor}`}
+                  className={`flex-1 py-3 px-4 rounded-xl font-bold text-white shadow-lg bg-gradient-to-r ${activeGradient} transition-transform active:scale-95 flex justify-center items-center`}
                 >
                   {isSubmitting ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
-                    "Confirm"
+                    "YAAAS!"
                   )}
                 </button>
               </div>
@@ -259,15 +297,19 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
         </div>
       )}
 
-      {/* Success Overlay */}
+      {/* Success Overlay - Confetti Style */}
       {showSuccess && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white/95 animate-fade-in">
-          <div className="text-center p-8 max-w-xs w-full animate-slide-up">
-            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-              <CheckCircle2 size={40} className="text-emerald-600" />
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-white/90 backdrop-blur-sm animate-fade-in">
+          <div className="text-center p-8 max-w-xs w-full animate-slide-up relative">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-tr from-yellow-200 to-pink-200 rounded-full blur-3xl opacity-50 animate-pulse"></div>
+            
+            <div className="relative">
+                <div className="w-24 h-24 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-200 animate-bounce-small">
+                <CheckCircle2 size={48} className="text-white" />
+                </div>
+                <h2 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">VOTED!</h2>
+                <p className="text-slate-600 font-medium">You're awesome. <br/>Thanks for participating!</p>
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Vote Recorded!</h2>
-            <p className="text-slate-500 text-sm">Thank you for voting in the <br/><strong>{currentCategory?.label}</strong> category.</p>
           </div>
         </div>
       )}

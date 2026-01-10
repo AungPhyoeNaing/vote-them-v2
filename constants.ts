@@ -65,10 +65,10 @@ export const CANDIDATES: Candidate[] = [
 ];
 
 export const CATEGORIES = [
-  { id: CategoryId.KING, label: 'King', color: 'bg-blue-600' },
-  { id: CategoryId.QUEEN, label: 'Queen', color: 'bg-rose-500' },
-  { id: CategoryId.MISTER, label: 'Mister', color: 'bg-teal-600' },
-  { id: CategoryId.MISS, label: 'Miss', color: 'bg-violet-600' },
+  { id: CategoryId.KING, label: 'KING', color: 'bg-blue-600' },
+  { id: CategoryId.QUEEN, label: 'QUEEN', color: 'bg-pink-600' },
+  { id: CategoryId.MISTER, label: 'MISTER', color: 'bg-teal-600' },
+  { id: CategoryId.MISS, label: 'MISS', color: 'bg-purple-600' },
 ];
 
 export const ADMIN_PIN = "2025";

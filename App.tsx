@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import VotingInterface from './components/VotingInterface';
 import AdminDashboard from './components/AdminDashboard';
 import { ADMIN_PIN } from './constants';
-import { School, AlertCircle } from 'lucide-react';
+import { School, AlertCircle, ArrowLeft } from 'lucide-react';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'user' | 'admin-login' | 'admin'>('user');
@@ -44,15 +44,21 @@ const App: React.FC = () => {
 
     if (view === 'admin-login') {
       return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
-          <div className="bg-white p-8 rounded-2xl w-full max-w-sm border border-slate-200 shadow-xl">
+        <div className="min-h-screen bg-mesh flex items-center justify-center p-4 font-sans relative overflow-hidden">
+          {/* Background Elements */}
+           <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+            <div className="absolute top-10 left-10 w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob"></div>
+            <div className="absolute bottom-10 right-10 w-64 h-64 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob animation-delay-2000"></div>
+          </div>
+
+          <div className="glass-panel p-8 rounded-3xl w-full max-w-sm border border-white/40 shadow-2xl relative z-10">
             <div className="flex justify-center mb-6">
-              <div className="p-4 bg-uni-50 rounded-full border border-uni-100">
-                <School className="text-uni-600" size={32} />
+              <div className="p-4 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl shadow-lg text-white transform -rotate-3 hover:rotate-0 transition-transform">
+                <School size={32} />
               </div>
             </div>
-            <h2 className="text-xl font-bold text-center text-slate-900 mb-1">Faculty Access</h2>
-            <p className="text-center text-slate-500 text-sm mb-6">Enter PIN to access results</p>
+            <h2 className="text-2xl font-black text-center text-slate-800 mb-1">Faculty Access</h2>
+            <p className="text-center text-slate-500 text-sm mb-6 font-medium">Restricted Area</p>
             
             <form onSubmit={handleAdminLogin} className="space-y-4">
               <div>
@@ -60,28 +66,28 @@ const App: React.FC = () => {
                   type="password"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  placeholder="PIN"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:border-uni-500 focus:ring-1 focus:ring-uni-500 transition-all text-center tracking-widest text-lg font-mono placeholder-slate-400"
+                  placeholder="PIN CODE"
+                  className="w-full bg-white/60 border-2 border-white/50 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-center tracking-[0.5em] text-lg font-bold placeholder-slate-400"
                   autoFocus
                 />
               </div>
               {error && (
-                <div className="text-red-600 text-xs flex items-center justify-center gap-2 bg-red-50 py-2 rounded-lg font-medium">
+                <div className="text-red-500 text-xs flex items-center justify-center gap-2 bg-red-50/80 py-2 rounded-lg font-bold">
                   <AlertCircle size={14} /> {error}
                 </div>
               )}
               <button
                 type="submit"
-                className="w-full bg-uni-600 hover:bg-uni-700 text-white font-bold py-3 rounded-xl transition-colors shadow-sm"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95"
               >
                 Access Dashboard
               </button>
               <button
                 type="button"
                 onClick={() => { window.location.hash = ''; }}
-                className="w-full text-slate-500 text-sm py-2 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-colors font-medium"
+                className="w-full text-slate-500 text-sm py-2 hover:text-slate-800 rounded-lg transition-colors font-bold flex items-center justify-center gap-2"
               >
-                ← Back to Student Voting
+                <ArrowLeft size={14} /> Back to Voting
               </button>
             </form>
           </div>
