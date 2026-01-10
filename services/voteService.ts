@@ -32,7 +32,15 @@ export const castVote = async (candidateId: string, categoryId: string): Promise
     if (!response.ok) {
         const text = await response.text();
         console.error(`API Error (${response.status}):`, text);
-        alert(`Server Error: ${response.status}. Ensure PHP server is running.`);
+        
+        // Try to parse clean error message from PHP
+        try {
+            const json = JSON.parse(text);
+            alert(`Server Error: ${json.error}`);
+        } catch (e) {
+            // If it's a raw PHP crash (HTML), show a summary
+            alert(`Server Error (${response.status}): The backend crashed. Check the console for details.`);
+        }
         return false;
     }
 
