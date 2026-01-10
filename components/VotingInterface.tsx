@@ -107,7 +107,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
         </div>
         
         {/* Bouncy Category Selector */}
-        <div className="mt-4 flex overflow-x-auto no-scrollbar gap-3 snap-x max-w-md mx-auto px-1 py-2">
+        <div className="mt-4 flex overflow-x-auto no-scrollbar gap-3 snap-x max-w-md mx-auto px-4 py-3 pb-4">
             {CATEGORIES.map(cat => {
               const isVoted = votedCategories[cat.id];
               const isActive = activeCategory === cat.id;
