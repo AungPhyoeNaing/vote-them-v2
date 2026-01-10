@@ -8,5 +8,14 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    // This proxy configuration allows the React app (port 3000)
+    // to talk to the PHP server (port 8000) locally.
+    proxy: {
+      '/api.php': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   }
 });

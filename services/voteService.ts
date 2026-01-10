@@ -29,6 +29,13 @@ export const castVote = async (candidateId: string, categoryId: string): Promise
       body: JSON.stringify({ candidateId, categoryId }),
     });
 
+    if (!response.ok) {
+        const text = await response.text();
+        console.error(`API Error (${response.status}):`, text);
+        alert(`Server Error: ${response.status}. Ensure PHP server is running.`);
+        return false;
+    }
+
     const data = await response.json();
 
     if (data.success) {
@@ -39,12 +46,12 @@ export const castVote = async (candidateId: string, categoryId: string): Promise
       return true;
     } else {
       console.error('Vote failed:', data.error);
-      alert('Failed to record vote. Please try again.');
+      alert('Failed to record vote: ' + data.error);
       return false;
     }
   } catch (error) {
     console.error('Network Error:', error);
-    alert('Network error. Check your connection.');
+    alert('Network error. Ensure "php -S localhost:8000 -t public" is running in a separate terminal.');
     return false;
   }
 };
