@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { VoteState, CategoryId, Candidate } from '../types';
 import { CANDIDATES, CATEGORIES } from '../constants';
-import { subscribeToVotes, resetAllVotes } from '../services/voteService';
+import { getVoteStats, resetAllVotes } from '../services/voteService';
 import { LogOut, LayoutDashboard, Users, Trophy, Activity, RefreshCw, Sparkles } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -11,16 +11,18 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [votes, setVotes] = useState<VoteState>({});
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchData = async () => {
+    setIsRefreshing(true);
+    const data = await getVoteStats();
+    setVotes(data);
+    setLastUpdated(new Date());
+    setIsRefreshing(false);
+  };
 
   useEffect(() => {
-    const unsubscribe = subscribeToVotes((newVotes) => {
-      setVotes(prev => {
-        const updated = typeof newVotes === 'function' ? newVotes(prev) : newVotes;
-        return updated;
-      });
-      setLastUpdated(new Date());
-    });
-    return () => unsubscribe();
+    fetchData();
   }, []);
 
   const dashboardData = useMemo(() => {
@@ -79,26 +81,41 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             </div>
             <div>
               <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">
-                Live Results
+                Results Dashboard
               </h1>
               <div className="flex items-center gap-2 mt-1">
-                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
+                {isRefreshing ? (
+                   <span className="flex h-2 w-2 relative">
+                     <span className="animate-spin absolute inline-flex h-full w-full rounded-full border-2 border-emerald-500 border-t-transparent"></span>
+                   </span>
+                ) : (
+                   <span className="flex h-2 w-2 relative">
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
+                   </span>
+                )}
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">
                   Updated: {lastUpdated.toLocaleTimeString()}
                 </p>
               </div>
             </div>
           </div>
-          <button 
-            onClick={onLogout}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-red-600 bg-white/50 hover:bg-white rounded-xl transition-all shadow-sm border border-white/40"
-          >
-            <LogOut size={18} />
-            <span className="hidden sm:inline">Exit</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+                onClick={fetchData}
+                disabled={isRefreshing}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all shadow-sm border border-indigo-100 active:scale-95"
+            >
+                <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
+                <span className="hidden sm:inline">{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+            </button>
+            <button 
+                onClick={onLogout}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-red-600 bg-white/50 hover:bg-white rounded-xl transition-all shadow-sm border border-white/40 active:scale-95"
+            >
+                <LogOut size={18} />
+                <span className="hidden sm:inline">Exit</span>
+            </button>
+          </div>
         </div>
       </header>
 

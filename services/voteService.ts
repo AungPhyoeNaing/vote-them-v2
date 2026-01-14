@@ -61,32 +61,18 @@ export const castVote = async (candidateId: string, categoryId: string): Promise
   }
 };
 
-export const subscribeToVotes = (callback: (votes: VoteState | ((prev: VoteState) => VoteState)) => void) => {
-  let isMounted = true;
-
-  const fetchStats = async () => {
-    if (!isMounted) return;
-    try {
-      const response = await fetch(`${API_URL}/stats`);
-      if (response.ok) {
-        const data: VoteState = await response.json();
-        callback(data);
-      }
-    } catch (error) {
-      // Silently fail on polling errors to avoid spamming console
+export const getVoteStats = async (): Promise<VoteState> => {
+  try {
+    const response = await fetch(`${API_URL}/stats`);
+    if (response.ok) {
+      return await response.json();
     }
-  };
-
-  // Initial fetch
-  fetchStats();
-
-  // Poll every 3 seconds
-  const intervalId = setInterval(fetchStats, 3000);
-
-  return () => {
-    isMounted = false;
-    clearInterval(intervalId);
-  };
+    console.error('Failed to fetch stats');
+    return {};
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    return {};
+  }
 };
 
 export const resetAllVotes = async () => {
