@@ -152,11 +152,11 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
 
   const getIcon = (catId: string) => {
     switch(catId) {
-      case CategoryId.KING: return <Crown size={20} className="text-black fill-white" />;
-      case CategoryId.QUEEN: return <Star size={20} className="text-black fill-white" />;
-      case CategoryId.MISTER: return <Zap size={20} className="text-black fill-white" />;
-      case CategoryId.MISS: return <Heart size={20} className="text-black fill-white" />;
-      default: return <Sparkles size={20} />;
+      case CategoryId.KING: return <Crown size={16} className="text-black fill-white" />;
+      case CategoryId.QUEEN: return <Star size={16} className="text-black fill-white" />;
+      case CategoryId.MISTER: return <Zap size={16} className="text-black fill-white" />;
+      case CategoryId.MISS: return <Heart size={16} className="text-black fill-white" />;
+      default: return <Sparkles size={16} />;
     }
   }
 
@@ -179,23 +179,23 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
             <div className="px-4 py-3 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                     <div className={`${activeColor} p-2 rounded-xl text-white border-2 border-black shadow-neo-sm transition-all duration-500 hover:scale-110`}>
-                       <Sparkles size={24} className="animate-pulse-fast text-black fill-white" />
+                       <Sparkles size={20} className="animate-pulse-fast text-black fill-white" />
                     </div>
                     <div className="flex flex-col">
-                    <h1 className="text-3xl font-black text-black leading-none tracking-tight drop-shadow-sm">
+                    <h1 className="text-2xl font-black text-black leading-none tracking-tight drop-shadow-sm">
                         FRESHER '25
                     </h1>
                     <span className="text-xs uppercase font-bold text-black tracking-widest bg-yellow-300 px-1 rounded-sm transform -rotate-1 inline-block w-max border border-black">Vote Now</span>
                     </div>
                 </div>
-                <button onClick={onAdminClick} className="text-black hover:text-indigo-600 transition-colors bg-white p-3 rounded-full border-2 border-black shadow-neo-sm hover:shadow-neo active:translate-y-1 active:shadow-none">
-                    <Lock size={20} />
+                <button onClick={onAdminClick} className="text-black hover:text-indigo-600 transition-colors bg-white p-2 rounded-full border-2 border-black shadow-neo-sm hover:shadow-neo active:translate-y-1 active:shadow-none">
+                    <Lock size={18} />
                 </button>
             </div>
             
             {/* Category Selector with Fixed Height Container to prevent jumping */}
-            <div className="relative w-full py-3">
-                <div className="flex overflow-x-auto no-scrollbar gap-4 px-4 items-center pb-2 snap-x">
+            <div className="relative w-full">
+                <div className="flex overflow-x-auto no-scrollbar gap-4 px-4 items-center pt-4 pb-4 snap-x">
                     {CATEGORIES.map(cat => {
                     const isVoted = votedCategories[cat.id];
                     const isActive = activeCategory === cat.id;
