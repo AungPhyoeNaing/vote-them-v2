@@ -183,9 +183,9 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
                     </div>
                     <div className="flex flex-col">
                     <h1 className="text-2xl font-black text-black leading-none tracking-tight drop-shadow-sm">
-                        FRESHER '25
+                        IT Fresher Welcome!!!
                     </h1>
-                    <span className="text-xs uppercase font-bold text-black tracking-widest bg-yellow-300 px-1 rounded-sm transform -rotate-1 inline-block w-max border border-black">Vote Now</span>
+                    <span className="text-xs uppercase font-bold text-black tracking-widest bg-yellow-300 p-1 mt-1 rounded-sm transform -rotate-1 inline-block w-max border border-black">Voteလိုက်နော်</span>
                     </div>
                 </div>
                 <button onClick={onAdminClick} className="text-black hover:text-indigo-600 transition-colors bg-white p-2 rounded-full border-2 border-black shadow-neo-sm hover:shadow-neo active:translate-y-1 active:shadow-none">
@@ -236,7 +236,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
              </div>
            ) : (
              <p className="text-black font-bold bg-white inline-block px-5 py-2 rounded-full text-base border-2 border-black shadow-neo-sm transform rotate-1">
-               👇 Tap a card to view profile
+               👇 ပုံလေးနှိပ်ပြီး Vote ပါ သူငယ်ချင်း
              </p>
            )}
         </div>
@@ -286,7 +286,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
             {/* Content */}
             <div className="p-6 pt-0 flex flex-col relative z-10 -mt-10 overflow-y-auto no-scrollbar">
                <div className="text-center">
-                 <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-black text-black ${activeColor} mb-3 border-2 border-black shadow-neo transform -rotate-2`}>
+                 <span className={`inline-block px-4 py-1.5 mt-1 rounded-full text-sm font-black text-black ${activeColor} mb-3 border-2 border-black shadow-neo transform -rotate-2`}>
                     #{selectedCandidate.number} • {selectedCandidate.class}
                  </span>
                  <h3 className="text-4xl font-black text-black leading-none mb-4 tracking-tighter drop-shadow-sm">
@@ -320,7 +320,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
                  <img src={selectedCandidate.imageUrl} className="w-full h-full object-cover" />
               </div>
               
-              <h3 className="text-3xl font-black text-black mb-1">Are you sure?</h3>
+              <h3 className="text-3xl font-black text-black mb-3">ပေးမှာသေချာပြီလား</h3>
               <p className="text-slate-600 text-sm mb-6 font-bold bg-yellow-100 px-3 py-1 border-2 border-black rounded-lg transform rotate-1">
                 Voting for <span className="text-black font-black">{selectedCandidate.name}</span>
               </p>
