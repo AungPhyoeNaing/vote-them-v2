@@ -8,6 +8,58 @@ interface VotingInterfaceProps {
   onAdminClick: () => void;
 }
 
+// Sub-component for efficient image loading
+const LazyImageCard = ({ candidate, onClick, isVoted, gradient, index }: any) => {
+    const [isLoaded, setIsLoaded] = useState(false);
+    
+    // Optimization: Cap animation delay at 0.5s so bottom items don't take forever to appear
+    // 60 items * 0.1s = 6 seconds wait time (Too long!)
+    // New logic: Only stagger the first 10 items.
+    const delay = index < 10 ? index * 0.05 : 0; 
+
+    return (
+        <div 
+            onClick={onClick}
+            className={`
+            relative group rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 animate-slide-up bg-white shadow-md border-4 border-white
+            ${isVoted ? 'opacity-50 grayscale pointer-events-none' : 'hover:-translate-y-2 hover:shadow-2xl hover:rotate-1'}
+            `}
+            style={{ animationDelay: `${delay}s`, animationFillMode: 'both' }}
+        >
+            {/* Image Container */}
+            <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden rounded-2xl">
+            {/* Skeleton Loader */}
+            {!isLoaded && (
+                <div className="absolute inset-0 bg-slate-200 animate-pulse z-0" />
+            )}
+            
+            <img 
+                src={candidate.imageUrl} 
+                alt={candidate.name}
+                className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                loading="lazy"
+                onLoad={() => setIsLoaded(true)}
+            />
+            
+            {/* Number Badge */}
+            <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-md text-slate-900 text-xs font-black px-2 py-1 rounded-lg shadow-sm z-10">
+                #{candidate.number}
+            </div>
+
+            {/* Gradient Overlay on Hover */}
+            <div className={`absolute inset-0 bg-gradient-to-t ${gradient} opacity-0 group-hover:opacity-40 transition-opacity duration-300 z-10`} />
+            </div>
+            
+            <div className="p-3 text-center">
+            <h3 className="text-slate-800 font-extrabold truncate text-sm">{candidate.name}</h3>
+            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider bg-slate-100 inline-block px-2 py-0.5 rounded-md mt-1">
+                {candidate.class}
+            </p>
+            </div>
+        </div>
+    );
+};
+
 const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
   const [activeCategory, setActiveCategory] = useState<CategoryId>(CategoryId.KING);
   const [votedCategories, setVotedCategories] = useState<Record<string, boolean>>({});
@@ -157,40 +209,14 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
 
         <div className="grid grid-cols-2 gap-4 pb-10">
           {filteredCandidates.map((candidate, idx) => (
-            <div 
-              key={candidate.id}
-              onClick={() => handleVote(candidate)}
-              className={`
-                relative group rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 animate-slide-up bg-white shadow-md border-4 border-white
-                ${votedCategories[activeCategory] ? 'opacity-50 grayscale pointer-events-none' : 'hover:-translate-y-2 hover:shadow-2xl hover:rotate-1'}
-              `}
-              style={{ animationDelay: `${idx * 0.1}s` }}
-            >
-              {/* Image Container */}
-              <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden rounded-2xl">
-                <img 
-                  src={candidate.imageUrl} 
-                  alt={candidate.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  loading="lazy"
-                />
-                
-                {/* Number Badge */}
-                <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-md text-slate-900 text-xs font-black px-2 py-1 rounded-lg shadow-sm">
-                  #{candidate.number}
-                </div>
-
-                {/* Gradient Overlay on Hover */}
-                <div className={`absolute inset-0 bg-gradient-to-t ${activeGradient} opacity-0 group-hover:opacity-40 transition-opacity duration-300`} />
-              </div>
-              
-              <div className="p-3 text-center">
-                <h3 className="text-slate-800 font-extrabold truncate text-sm">{candidate.name}</h3>
-                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider bg-slate-100 inline-block px-2 py-0.5 rounded-md mt-1">
-                  {candidate.class}
-                </p>
-              </div>
-            </div>
+            <LazyImageCard 
+                key={candidate.id}
+                candidate={candidate}
+                index={idx}
+                isVoted={votedCategories[activeCategory]}
+                onClick={() => handleVote(candidate)}
+                gradient={activeGradient}
+            />
           ))}
         </div>
       </main>
@@ -217,7 +243,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
             </button>
 
             {/* Image */}
-            <div className="w-full aspect-square relative shrink-0">
+            <div className="w-full aspect-square relative shrink-0 bg-slate-100">
                <img 
                  src={selectedCandidate.imageUrl} 
                  className="w-full h-full object-cover"
@@ -263,7 +289,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
              <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${activeGradient}`} />
             
             <div className="flex flex-col items-center text-center mt-2">
-              <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg mb-4 overflow-hidden">
+              <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg mb-4 overflow-hidden bg-slate-100">
                  <img src={selectedCandidate.imageUrl} className="w-full h-full object-cover" />
               </div>
               
