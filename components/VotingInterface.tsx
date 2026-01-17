@@ -8,51 +8,70 @@ interface VotingInterfaceProps {
   onAdminClick: () => void;
 }
 
+// Trigger Confetti
+const triggerConfetti = () => {
+  const count = 200;
+  const defaults = {
+    origin: { y: 0.7 },
+    zIndex: 9999
+  };
+
+  function fire(particleRatio: number, opts: any) {
+    if ((window as any).confetti) {
+        (window as any).confetti({
+        ...defaults,
+        ...opts,
+        particleCount: Math.floor(count * particleRatio)
+        });
+    }
+  }
+
+  fire(0.25, { spread: 26, startVelocity: 55 });
+  fire(0.2, { spread: 60 });
+  fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+  fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+  fire(0.1, { spread: 120, startVelocity: 45 });
+};
+
 // Sub-component for efficient image loading
 const LazyImageCard = ({ candidate, onClick, isVoted, gradient, index }: any) => {
     const [isLoaded, setIsLoaded] = useState(false);
     
-    // Optimization: Cap animation delay at 0.5s so bottom items don't take forever to appear
-    // 60 items * 0.1s = 6 seconds wait time (Too long!)
-    // New logic: Only stagger the first 10 items.
-    const delay = index < 10 ? index * 0.05 : 0; 
-
     return (
         <div 
             onClick={onClick}
             className={`
-            relative group rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 animate-slide-up bg-white shadow-md border-4 border-white
-            ${isVoted ? 'opacity-50 grayscale pointer-events-none' : 'hover:-translate-y-2 hover:shadow-2xl hover:rotate-1'}
+            relative group rounded-3xl overflow-hidden cursor-pointer bg-white border-4 border-black shadow-neo transform transition-transform duration-150
+            ${isVoted ? 'opacity-50 grayscale pointer-events-none' : 'active:scale-95 hover:-translate-y-1 hover:shadow-neo-xl hover:rotate-1 md:animate-float'}
             `}
-            style={{ animationDelay: `${delay}s`, animationFillMode: 'both' }}
+            style={{ 
+                animationDuration: `${6 + Math.random()}s`
+            }}
         >
             {/* Image Container */}
-            <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden rounded-2xl">
+            <div className="aspect-[4/5] bg-yellow-100 relative overflow-hidden rounded-xl m-2 border-2 border-black">
             {/* Skeleton Loader */}
             {!isLoaded && (
-                <div className="absolute inset-0 bg-slate-200 animate-pulse z-0" />
+                <div className="absolute inset-0 bg-yellow-200 animate-pulse z-0" />
             )}
             
             <img 
                 src={candidate.imageUrl} 
                 alt={candidate.name}
-                className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                 loading="lazy"
                 onLoad={() => setIsLoaded(true)}
             />
             
             {/* Number Badge */}
-            <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-md text-slate-900 text-xs font-black px-2 py-1 rounded-lg shadow-sm z-10">
+            <div className="absolute top-2 left-2 bg-white text-black text-xs font-black px-2 py-1 rounded-lg border-2 border-black shadow-neo-sm z-10 transform -rotate-6">
                 #{candidate.number}
             </div>
-
-            {/* Gradient Overlay on Hover */}
-            <div className={`absolute inset-0 bg-gradient-to-t ${gradient} opacity-0 group-hover:opacity-40 transition-opacity duration-300 z-10`} />
             </div>
             
             <div className="p-3 text-center">
-            <h3 className="text-slate-800 font-extrabold truncate text-sm">{candidate.name}</h3>
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider bg-slate-100 inline-block px-2 py-0.5 rounded-md mt-1">
+            <h3 className="text-black font-extrabold truncate text-lg tracking-tight leading-tight">{candidate.name}</h3>
+            <p className="text-black text-xs font-bold uppercase tracking-wider bg-yellow-300 inline-block px-3 py-1 rounded-full border-2 border-black mt-2 group-hover:bg-yellow-400 transition-colors transform rotate-1">
                 {candidate.class}
             </p>
             </div>
@@ -89,16 +108,20 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
     if (!selectedCandidate) return;
     
     setIsSubmitting(true);
-    const success = await castVote(selectedCandidate.id, activeCategory);
+    const result = await castVote(selectedCandidate.id, activeCategory);
     
-    if (success) {
+    if (result.success) {
       setVotedCategories(prev => ({ ...prev, [activeCategory]: true }));
       setShowConfirmModal(false); // Close confirmation immediately
       setShowSuccess(true);
+      triggerConfetti(); // 🎉
       setTimeout(() => {
         setShowSuccess(false);
         setSelectedCandidate(null);
-      }, 2500);
+      }, 3500); // Slightly longer to enjoy confetti
+    } else {
+      alert(result.error || 'Failed to submit vote.');
+      setShowConfirmModal(false);
     }
     setIsSubmitting(false);
   };
@@ -106,103 +129,114 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
   const filteredCandidates = CANDIDATES.filter(c => c.categoryId === activeCategory);
   const currentCategory = CATEGORIES.find(c => c.id === activeCategory);
   
-  // Dynamic gradient based on category
+  // Dynamic gradient based on category (Cartoony flat colors)
   const getGradient = (catId: string) => {
     switch(catId) {
-      case CategoryId.KING: return 'from-blue-400 to-indigo-600 shadow-blue-400/50';
-      case CategoryId.QUEEN: return 'from-pink-400 to-rose-600 shadow-pink-400/50';
-      case CategoryId.MISTER: return 'from-teal-400 to-emerald-600 shadow-teal-400/50';
-      case CategoryId.MISS: return 'from-violet-400 to-purple-600 shadow-purple-400/50';
+      case CategoryId.KING: return 'from-blue-400 to-blue-500';
+      case CategoryId.QUEEN: return 'from-pink-400 to-pink-500';
+      case CategoryId.MISTER: return 'from-teal-400 to-teal-500';
+      case CategoryId.MISS: return 'from-purple-400 to-purple-500';
       default: return 'from-slate-400 to-slate-600';
     }
   };
-
-  const getIcon = (catId: string) => {
-    switch(catId) {
-      case CategoryId.KING: return <Crown size={14} />;
-      case CategoryId.QUEEN: return <Star size={14} />;
-      case CategoryId.MISTER: return <Zap size={14} />;
-      case CategoryId.MISS: return <Heart size={14} />;
-      default: return <Sparkles size={14} />;
+  
+  const getCategoryColor = (catId: string) => {
+     switch(catId) {
+      case CategoryId.KING: return 'bg-cartoon-blue';
+      case CategoryId.QUEEN: return 'bg-cartoon-red';
+      case CategoryId.MISTER: return 'bg-cartoon-green';
+      case CategoryId.MISS: return 'bg-cartoon-purple';
+      default: return 'bg-slate-400';
     }
   }
 
-  const activeGradient = getGradient(activeCategory);
+  const getIcon = (catId: string) => {
+    switch(catId) {
+      case CategoryId.KING: return <Crown size={20} className="text-black fill-white" />;
+      case CategoryId.QUEEN: return <Star size={20} className="text-black fill-white" />;
+      case CategoryId.MISTER: return <Zap size={20} className="text-black fill-white" />;
+      case CategoryId.MISS: return <Heart size={20} className="text-black fill-white" />;
+      default: return <Sparkles size={20} />;
+    }
+  }
+
+  const activeColor = getCategoryColor(activeCategory);
+  const activeGradient = getGradient(activeCategory); // Keep for some gradient usages
 
   return (
-    <div className="min-h-screen bg-mesh relative overflow-x-hidden font-sans pb-24">
+    <div className="min-h-screen relative overflow-x-hidden font-sans pb-32">
       
       {/* Background Decorative Blobs */}
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none opacity-50">
+        <div className="absolute top-10 -left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob border-4 border-transparent"></div>
+        <div className="absolute top-10 -right-10 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-20 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
       </div>
 
       {/* Sticky Header with Blur */}
-      <header className="sticky top-0 z-30 bg-white/60 backdrop-blur-xl border-b border-white/30 shadow-sm transition-all duration-300">
+      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b-4 border-black shadow-sm transition-all duration-300 pt-2 pb-1">
         <div className="max-w-md mx-auto w-full">
             <div className="px-4 py-3 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                    <div className={`bg-gradient-to-br ${activeGradient} p-2 rounded-xl text-white shadow-lg transition-all duration-500`}>
-                    <Sparkles size={20} className="animate-pulse-fast" />
+                    <div className={`${activeColor} p-2 rounded-xl text-white border-2 border-black shadow-neo-sm transition-all duration-500 hover:scale-110`}>
+                       <Sparkles size={24} className="animate-pulse-fast text-black fill-white" />
                     </div>
                     <div className="flex flex-col">
-                    <h1 className="text-xl font-extrabold text-slate-800 leading-none tracking-tight">
+                    <h1 className="text-3xl font-black text-black leading-none tracking-tight drop-shadow-sm">
                         FRESHER '25
                     </h1>
-                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Vote Now</span>
+                    <span className="text-xs uppercase font-bold text-black tracking-widest bg-yellow-300 px-1 rounded-sm transform -rotate-1 inline-block w-max border border-black">Vote Now</span>
                     </div>
                 </div>
-                <button onClick={onAdminClick} className="text-slate-400 hover:text-indigo-600 transition-colors bg-white/50 p-2 rounded-full">
-                    <Lock size={18} />
+                <button onClick={onAdminClick} className="text-black hover:text-indigo-600 transition-colors bg-white p-3 rounded-full border-2 border-black shadow-neo-sm hover:shadow-neo active:translate-y-1 active:shadow-none">
+                    <Lock size={20} />
                 </button>
             </div>
             
             {/* Category Selector with Fixed Height Container to prevent jumping */}
-            <div className="relative h-16 w-full">
-                <div className="absolute inset-0 flex overflow-x-auto no-scrollbar gap-3 px-4 items-center">
+            <div className="relative w-full py-3">
+                <div className="flex overflow-x-auto no-scrollbar gap-4 px-4 items-center pb-2 snap-x">
                     {CATEGORIES.map(cat => {
                     const isVoted = votedCategories[cat.id];
                     const isActive = activeCategory === cat.id;
-                    const gradient = getGradient(cat.id);
+                    const catColor = getCategoryColor(cat.id);
                     
                     return (
                         <button
                         key={cat.id}
                         onClick={() => setActiveCategory(cat.id)}
                         className={`
-                            relative whitespace-nowrap px-5 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2 flex-shrink-0
+                            relative whitespace-nowrap px-6 py-3 rounded-2xl text-base font-black transition-all duration-200 flex items-center gap-2 flex-shrink-0 border-2 border-black snap-center
                             ${isActive 
-                            ? `bg-gradient-to-r ${gradient} text-white shadow-lg scale-105 ring-2 ring-white z-10` 
-                            : 'bg-white/80 text-slate-500 hover:bg-white'
+                            ? `${catColor} text-black shadow-neo scale-105 z-10 transform -rotate-2` 
+                            : 'bg-white text-slate-500 hover:bg-slate-50'
                             }
                             ${isVoted && !isActive ? 'opacity-60 grayscale' : ''}
+                            active:scale-95 active:shadow-none active:translate-y-1
                         `}
                         >
                         {getIcon(cat.id)}
                         {cat.label}
-                        {isActive && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>}
                         </button>
                     );
                     })}
                     {/* Large spacer to ensure last item is fully visible and touchable */}
-                    <div className="w-8 flex-shrink-0 h-1"></div>
+                    <div className="w-4 flex-shrink-0"></div>
                 </div>
             </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto px-4 mt-6">
-        <div className="mb-6 text-center animate-fade-in">
+      <main className="max-w-md mx-auto px-4 mt-8">
+        <div className="mb-8 text-center animate-fade-in">
            {votedCategories[activeCategory] ? (
-             <div className="glass-panel inline-flex items-center gap-2 px-6 py-2 rounded-full text-emerald-600 font-bold shadow-sm">
-                <CheckCircle2 size={18} className="fill-emerald-100" /> Vote Registered
+             <div className="bg-emerald-100 inline-flex items-center gap-2 px-6 py-3 rounded-full text-black font-black border-2 border-black shadow-neo animate-pulse-fast text-lg">
+                <CheckCircle2 size={24} className="text-emerald-600 fill-white" /> VOTE REGISTERED!
              </div>
            ) : (
-             <p className="text-slate-600 font-medium bg-white/30 inline-block px-4 py-1 rounded-full text-sm backdrop-blur-sm">
-               Tap a card to view profile
+             <p className="text-black font-bold bg-white inline-block px-5 py-2 rounded-full text-base border-2 border-black shadow-neo-sm transform rotate-1">
+               👇 Tap a card to view profile
              </p>
            )}
         </div>
@@ -224,26 +258,23 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
       {/* Fun Expanded Profile Modal */}
       {selectedCandidate && (
         <div 
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-md animate-fade-in p-0 sm:p-4" 
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-0 sm:p-4" 
           onClick={() => setSelectedCandidate(null)}
         >
           <div 
-            className="bg-white w-full max-w-sm sm:rounded-3xl rounded-t-3xl shadow-2xl animate-slide-up flex flex-col max-h-[90vh] overflow-hidden relative ring-4 ring-white"
+            className="bg-white w-full max-w-sm sm:rounded-3xl rounded-t-3xl shadow-2xl animate-slide-up flex flex-col max-h-[90vh] overflow-hidden relative border-4 border-black"
             onClick={e => e.stopPropagation()}
           >
-            {/* Background Blob in Modal */}
-            <div className={`absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br ${activeGradient} rounded-full opacity-20 blur-3xl pointer-events-none`} />
-
             {/* Close Button */}
             <button 
               onClick={() => setSelectedCandidate(null)}
-              className="absolute top-4 right-4 z-20 bg-white/50 hover:bg-white text-slate-800 p-2 rounded-full backdrop-blur-md transition-all shadow-sm"
+              className="absolute top-4 right-4 z-20 bg-white hover:bg-slate-100 text-black p-2 rounded-full border-2 border-black shadow-neo transition-all hover:rotate-90"
             >
                 <X size={24} />
             </button>
 
             {/* Image */}
-            <div className="w-full aspect-square relative shrink-0 bg-slate-100">
+            <div className="w-full aspect-square relative shrink-0 bg-yellow-50 group border-b-4 border-black">
                <img 
                  src={selectedCandidate.imageUrl} 
                  className="w-full h-full object-cover"
@@ -255,25 +286,23 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
             {/* Content */}
             <div className="p-6 pt-0 flex flex-col relative z-10 -mt-10 overflow-y-auto no-scrollbar">
                <div className="text-center">
-                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r ${activeGradient} mb-3 shadow-md`}>
+                 <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-black text-black ${activeColor} mb-3 border-2 border-black shadow-neo transform -rotate-2`}>
                     #{selectedCandidate.number} • {selectedCandidate.class}
                  </span>
-                 <h3 className="text-3xl font-black text-slate-900 leading-none mb-4">
+                 <h3 className="text-4xl font-black text-black leading-none mb-4 tracking-tighter drop-shadow-sm">
                     {selectedCandidate.name}
                  </h3>
                </div>
-
-               {/* Removed Quote Section */}
 
                <div className="mt-auto space-y-3 pb-4">
                   <button
                     onClick={handleInitiateVote}
                     className={`
-                      w-full py-4 rounded-2xl font-bold text-white shadow-xl bg-gradient-to-r ${activeGradient} 
-                      hover:scale-[1.02] active:scale-[0.95] transition-all flex items-center justify-center gap-2 text-lg
+                      w-full py-4 rounded-2xl font-black text-white ${activeColor} border-4 border-black shadow-neo-xl
+                      hover:translate-y-1 hover:shadow-neo active:shadow-none transition-all flex items-center justify-center gap-2 text-xl animate-pulse-fast
                     `}
                   >
-                    <Star className="fill-white" size={20} /> VOTE NOW
+                    <Star className="text-black fill-white" size={24} /> VOTE NOW
                   </button>
                </div>
             </div>
@@ -283,36 +312,33 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
 
       {/* Confirmation Modal */}
       {showConfirmModal && selectedCandidate && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-6 animate-fade-in">
-          <div className="bg-white rounded-3xl w-full max-w-xs p-6 shadow-2xl animate-slide-up border-4 border-white relative overflow-hidden">
-             {/* Decorative */}
-             <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${activeGradient}`} />
-            
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md p-6 animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-xs p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] animate-slide-up relative overflow-hidden">
+             
             <div className="flex flex-col items-center text-center mt-2">
-              <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg mb-4 overflow-hidden bg-slate-100">
+              <div className="w-24 h-24 rounded-full border-4 border-black shadow-neo mb-4 overflow-hidden bg-slate-100">
                  <img src={selectedCandidate.imageUrl} className="w-full h-full object-cover" />
               </div>
               
-              <h3 className="text-2xl font-black text-slate-900 mb-1">Are you sure?</h3>
-              <p className="text-slate-500 text-sm mb-6 font-medium">
-                Voting for <span className={`text-transparent bg-clip-text bg-gradient-to-r ${activeGradient} font-bold`}>{selectedCandidate.name}</span>
-                <br/> in {currentCategory?.label} category.
+              <h3 className="text-3xl font-black text-black mb-1">Are you sure?</h3>
+              <p className="text-slate-600 text-sm mb-6 font-bold bg-yellow-100 px-3 py-1 border-2 border-black rounded-lg transform rotate-1">
+                Voting for <span className="text-black font-black">{selectedCandidate.name}</span>
               </p>
               
               <div className="flex gap-3 w-full">
                 <button 
                   onClick={() => setShowConfirmModal(false)}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-black bg-slate-200 border-2 border-black shadow-neo hover:translate-y-1 hover:shadow-none transition-all"
                 >
                   Nope
                 </button>
                 <button 
                   onClick={confirmVote}
                   disabled={isSubmitting}
-                  className={`flex-1 py-3 px-4 rounded-xl font-bold text-white shadow-lg bg-gradient-to-r ${activeGradient} transition-transform active:scale-95 flex justify-center items-center`}
+                  className={`flex-1 py-3 px-4 rounded-xl font-bold text-white ${activeColor} border-2 border-black shadow-neo hover:translate-y-1 hover:shadow-none transition-all flex justify-center items-center`}
                 >
                   {isSubmitting ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-4 border-black border-t-transparent rounded-full animate-spin" />
                   ) : (
                     "YAAAS!"
                   )}
@@ -325,16 +351,15 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
 
       {/* Success Overlay - Confetti Style */}
       {showSuccess && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-white/90 backdrop-blur-sm animate-fade-in">
-          <div className="text-center p-8 max-w-xs w-full animate-slide-up relative">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-tr from-yellow-200 to-pink-200 rounded-full blur-3xl opacity-50 animate-pulse"></div>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowSuccess(false)}>
+          <div className="text-center p-8 max-w-xs w-full animate-slide-up relative bg-white border-4 border-black rounded-3xl shadow-neo-xl">
             
             <div className="relative">
-                <div className="w-24 h-24 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-200 animate-bounce-small">
-                <CheckCircle2 size={48} className="text-white" />
+                <div className="w-24 h-24 bg-green-400 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black shadow-neo animate-bounce-small">
+                <CheckCircle2 size={48} className="text-black fill-white" />
                 </div>
-                <h2 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">VOTED!</h2>
-                <p className="text-slate-600 font-medium">You're awesome. <br/>Thanks for participating!</p>
+                <h2 className="text-4xl font-black text-black mb-2 tracking-tight">VOTED!</h2>
+                <p className="text-black font-bold bg-yellow-300 inline-block px-3 py-1 border-2 border-black transform -rotate-2">You're awesome!</p>
             </div>
           </div>
         </div>

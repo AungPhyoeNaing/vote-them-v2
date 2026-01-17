@@ -13,10 +13,10 @@ export const hasVotedInCategory = (categoryId: string): boolean => {
   return !!userVotes[categoryId];
 };
 
-export const castVote = async (candidateId: string, categoryId: string): Promise<boolean> => {
-  // 1. Client-side check to prevent immediate double voting
+export const castVote = async (candidateId: string, categoryId: string): Promise<{ success: boolean; error?: string }> => {
+  // 1. Client-side check
   if (hasVotedInCategory(categoryId)) {
-    return false;
+    return { success: false, error: 'You have already voted in this category (Device Check).' };
   }
 
   try {
@@ -29,35 +29,28 @@ export const castVote = async (candidateId: string, categoryId: string): Promise
       body: JSON.stringify({ candidateId, categoryId }),
     });
 
+    const data = await response.json().catch(() => null);
+
     if (!response.ok) {
-        const text = await response.text();
-        console.error(`API Error (${response.status}):`, text);
-        try {
-            const json = JSON.parse(text);
-            alert(`Server Error: ${json.error}`);
-        } catch (e) {
-            alert(`Server Error (${response.status}). Ensure "npm run server" is running.`);
-        }
-        return false;
+        console.error(`API Error (${response.status})`);
+        return { 
+          success: false, 
+          error: data?.error || `Server Error (${response.status})` 
+        };
     }
 
-    const data = await response.json();
-
-    if (data.success) {
+    if (data && data.success) {
       // 3. Update local state on success
       const userVotes = getUserVotes();
       userVotes[categoryId] = candidateId;
       localStorage.setItem(USER_VOTE_KEY, JSON.stringify(userVotes));
-      return true;
+      return { success: true };
     } else {
-      console.error('Vote failed:', data.error);
-      alert('Failed to record vote: ' + (data.error || 'Unknown error'));
-      return false;
+      return { success: false, error: data?.error || 'Unknown error' };
     }
   } catch (error) {
     console.error('Network Error:', error);
-    alert('Network error. Ensure "npm run server" is running in a separate terminal.');
-    return false;
+    return { success: false, error: 'Network error. Is the server running?' };
   }
 };
 

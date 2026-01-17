@@ -76,14 +76,27 @@ app.post('/api/vote', (req, res) => {
     return res.status(400).json({ error: 'Missing candidateId or categoryId' });
   }
 
-  const sql = `INSERT INTO votes (candidateId, categoryId, ipAddress) VALUES (?, ?, ?)`;
-  
-  db.run(sql, [candidateId, categoryId, ip], function(err) {
+  // CHECK DUPLICATE VOTE
+  const checkSql = `SELECT id FROM votes WHERE ipAddress = ? AND categoryId = ?`;
+  db.get(checkSql, [ip, categoryId], (err, row) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ error: 'Failed to record vote' });
+      return res.status(500).json({ error: 'Database error checking duplicates' });
     }
-    res.json({ success: true, id: this.lastID });
+    if (row) {
+      return res.status(403).json({ error: 'You have already voted in this category.' });
+    }
+
+    // Proceed to insert
+    const sql = `INSERT INTO votes (candidateId, categoryId, ipAddress) VALUES (?, ?, ?)`;
+    
+    db.run(sql, [candidateId, categoryId, ip], function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Failed to record vote' });
+      }
+      res.json({ success: true, id: this.lastID });
+    });
   });
 });
 

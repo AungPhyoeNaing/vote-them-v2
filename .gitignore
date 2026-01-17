@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# SQLite Database
+votes.db
+votes.db-shm
+votes.db-wal

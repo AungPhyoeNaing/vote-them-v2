@@ -8,6 +8,7 @@ const App: React.FC = () => {
   const [view, setView] = useState<'user' | 'admin-login' | 'admin'>('user');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
+  const [isShaking, setIsShaking] = useState(false);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -34,6 +35,8 @@ const App: React.FC = () => {
       setPin('');
     } else {
       setError('Incorrect PIN');
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
     }
   };
 
@@ -44,48 +47,50 @@ const App: React.FC = () => {
 
     if (view === 'admin-login') {
       return (
-        <div className="min-h-screen bg-mesh flex items-center justify-center p-4 font-sans relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center p-4 font-sans relative overflow-hidden">
           {/* Background Elements */}
-           <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-            <div className="absolute top-10 left-10 w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob"></div>
+           <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none opacity-50">
+            <div className="absolute top-10 left-10 w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob border-4 border-transparent"></div>
             <div className="absolute bottom-10 right-10 w-64 h-64 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob animation-delay-2000"></div>
           </div>
 
-          <div className="glass-panel p-8 rounded-3xl w-full max-w-sm border border-white/40 shadow-2xl relative z-10">
+          <div className="bg-white p-8 rounded-3xl w-full max-w-sm border-4 border-black shadow-neo-xl relative z-10 animate-slide-up">
             <div className="flex justify-center mb-6">
-              <div className="p-4 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl shadow-lg text-white transform -rotate-3 hover:rotate-0 transition-transform">
+              <div className="p-4 bg-yellow-400 rounded-2xl border-4 border-black shadow-neo text-black transform -rotate-3 hover:rotate-0 transition-transform hover:scale-110 duration-300 cursor-pointer">
                 <School size={32} />
               </div>
             </div>
-            <h2 className="text-2xl font-black text-center text-slate-800 mb-1">Faculty Access</h2>
-            <p className="text-center text-slate-500 text-sm mb-6 font-medium">Restricted Area</p>
+            <h2 className="text-3xl font-black text-center text-black mb-1 tracking-tight">Faculty Access</h2>
+            <p className="text-center text-slate-500 text-sm mb-6 font-bold uppercase tracking-widest bg-slate-100 inline-block px-2 mx-auto rounded border border-black transform rotate-1">Restricted Area</p>
             
             <form onSubmit={handleAdminLogin} className="space-y-4">
-              <div>
+              <div className={isShaking ? 'animate-shake' : ''}>
                 <input
                   type="password"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   placeholder="PIN CODE"
-                  className="w-full bg-white/60 border-2 border-white/50 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-center tracking-[0.5em] text-lg font-bold placeholder-slate-400"
+                  className={`w-full bg-slate-50 border-4 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-4 focus:ring-yellow-200 transition-all text-center tracking-[0.5em] text-xl font-black placeholder-slate-400
+                    ${error ? 'border-red-500 focus:border-red-500' : 'border-black focus:border-black'}
+                  `}
                   autoFocus
                 />
               </div>
               {error && (
-                <div className="text-red-500 text-xs flex items-center justify-center gap-2 bg-red-50/80 py-2 rounded-lg font-bold">
+                <div className="text-red-500 text-xs flex items-center justify-center gap-2 bg-red-50 py-2 rounded-lg font-black border-2 border-red-200 animate-pulse">
                   <AlertCircle size={14} /> {error}
                 </div>
               )}
               <button
                 type="submit"
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95"
+                className="w-full bg-black hover:bg-slate-800 text-white font-black py-3.5 rounded-xl transition-all shadow-neo hover:shadow-neo-lg active:scale-95 active:shadow-none hover:-translate-y-1 border-2 border-transparent"
               >
                 Access Dashboard
               </button>
               <button
                 type="button"
                 onClick={() => { window.location.hash = ''; }}
-                className="w-full text-slate-500 text-sm py-2 hover:text-slate-800 rounded-lg transition-colors font-bold flex items-center justify-center gap-2"
+                className="w-full text-slate-500 text-sm py-2 hover:text-black rounded-lg transition-colors font-bold flex items-center justify-center gap-2 hover:bg-slate-100 border-2 border-transparent hover:border-black"
               >
                 <ArrowLeft size={14} /> Back to Voting
               </button>
