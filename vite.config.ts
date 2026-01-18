@@ -8,6 +8,7 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    host: true, // Allow external access
     // Proxy configuration for Node.js backend
     proxy: {
       '/api': {

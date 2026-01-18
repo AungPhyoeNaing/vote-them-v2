@@ -1,6 +1,8 @@
 import { VoteState, UserVotes } from '../types';
 
+const API_URL = '/api';
 const VOTER_ID_KEY = 'it_fresher_voter_id';
+const USER_VOTE_KEY = 'it_fresher_user_votes';
 
 // Generates or retrieves a persistent unique ID for this browser
 const getVoterId = (): string => {
