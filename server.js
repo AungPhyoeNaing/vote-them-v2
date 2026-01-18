@@ -41,14 +41,40 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
     // INDEXING: Speeds up the COUNT(*) queries significantly
     db.run(`CREATE INDEX IF NOT EXISTS idx_candidate ON votes(candidateId)`);
+
+    // UNIQUE INDEX: This is the critical fix for race conditions. 
+    // It prevents duplicate votes per IP/Category at the database level.
+    db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_vote ON votes(ipAddress, categoryId)`);
   }
 });
+
+// --- Simple Rate Limiter ---
+// Protects the VPS from being hammered by scripts
+const rateLimit = (limit, windowMs) => {
+  const requests = new Map();
+  return (req, res, next) => {
+    const ip = req.ip || req.connection.remoteAddress;
+    const now = Date.now();
+    
+    if (!requests.has(ip)) {
+      requests.set(ip, []);
+    }
+    
+    const timestamps = requests.get(ip).filter(time => now - time < windowMs);
+    if (timestamps.length >= limit) {
+      return res.status(429).json({ error: 'Too many requests. Please slow down.' });
+    }
+    
+    timestamps.push(now);
+    requests.set(ip, timestamps);
+    next();
+  };
+};
 
 // --- API Endpoints ---
 
 // 1. Get Stats (Vote Counts)
 app.get('/api/stats', (req, res) => {
-  // Using the index we created for fast counting
   const sql = `SELECT candidateId, COUNT(*) as count FROM votes GROUP BY candidateId`;
   
   db.all(sql, [], (err, rows) => {
@@ -57,7 +83,6 @@ app.get('/api/stats', (req, res) => {
       return res.status(500).json({ error: 'Database error' });
     }
     
-    // Transform array to object: { "k1": 10, "q2": 5 }
     const voteState = {};
     rows.forEach((row) => {
       voteState[row.candidateId] = row.count;
@@ -68,40 +93,42 @@ app.get('/api/stats', (req, res) => {
 });
 
 // 2. Cast Vote
-app.post('/api/vote', (req, res) => {
+// Applied 100 req/min limit - safe for mobile data/VPS
+app.post('/api/vote', rateLimit(100, 60 * 1000), (req, res) => {
   const { candidateId, categoryId } = req.body;
-  const ip = req.ip || req.connection.remoteAddress; // Log IP for audit
+  const ip = req.ip || req.connection.remoteAddress;
 
   if (!candidateId || !categoryId) {
     return res.status(400).json({ error: 'Missing candidateId or categoryId' });
   }
 
-  // CHECK DUPLICATE VOTE
-  const checkSql = `SELECT id FROM votes WHERE ipAddress = ? AND categoryId = ?`;
-  db.get(checkSql, [ip, categoryId], (err, row) => {
+  // ATOMIC INSERT: We no longer "check then act". 
+  // We let the UNIQUE index handle the protection.
+  const sql = `INSERT INTO votes (candidateId, categoryId, ipAddress) VALUES (?, ?, ?)`;
+  
+  db.run(sql, [candidateId, categoryId, ip], function(err) {
     if (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Database error checking duplicates' });
-    }
-    if (row) {
-      return res.status(403).json({ error: 'You have already voted in this category.' });
-    }
-
-    // Proceed to insert
-    const sql = `INSERT INTO votes (candidateId, categoryId, ipAddress) VALUES (?, ?, ?)`;
-    
-    db.run(sql, [candidateId, categoryId, ip], function(err) {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Failed to record vote' });
+      // Catch the unique constraint error specifically
+      if (err.message.includes('UNIQUE constraint failed')) {
+        return res.status(403).json({ error: 'You have already voted in this category.' });
       }
-      res.json({ success: true, id: this.lastID });
-    });
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to record vote' });
+    }
+    res.json({ success: true, id: this.lastID });
   });
 });
 
 // 3. Reset Database (Admin)
 app.post('/api/reset', (req, res) => {
+  const { pin } = req.body;
+  
+  // Basic security: In a real app, use environment variables and hashing
+  // For this event, matching the frontend ADMIN_PIN (2025) is the goal
+  if (pin !== '2025') {
+    return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
+  }
+
   // Execute within a transaction for safety
   db.serialize(() => {
     db.run(`DELETE FROM votes`, [], (err) => {
