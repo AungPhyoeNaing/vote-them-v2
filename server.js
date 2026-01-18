@@ -45,7 +45,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
     // DOUBLE-CHECK UNIQUE INDEX:
     // This only blocks if BOTH the IP and the Fingerprint match for a category.
-    // This allows two identical phones on different IPs, OR two different phones on the same IP.
     db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_double_check_vote ON votes(ipAddress, fingerprint, categoryId)`);
   }
 });
