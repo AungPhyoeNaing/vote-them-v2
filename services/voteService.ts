@@ -25,6 +25,10 @@ const getOS = (): string => {
   return 'Other';
 };
 
+const isFirefox = (): boolean => {
+  return /firefox|fxios/i.test(navigator.userAgent);
+};
+
 // Captures data that stays the same even if the user switches browsers on the same phone
 const getHardwareProfile = (): string => {
   // 1. Screen Resolution (Usually consistent across browsers on same device)
@@ -101,6 +105,11 @@ export const hasVotedInCategory = (categoryId: string): boolean => {
 };
 
 export const castVote = async (candidateId: string, categoryId: string): Promise<{ success: boolean; error?: string }> => {
+  // 0. Security Block: Firefox
+  if (isFirefox()) {
+    return { success: false, error: 'Security Alert: Firefox is not supported. Please use Chrome, Safari, or Edge to vote.' };
+  }
+
   // 1. Client-side check
   if (hasVotedInCategory(categoryId)) {
     return { success: false, error: 'You have already voted in this category (Device Check).' };
