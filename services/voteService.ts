@@ -16,24 +16,13 @@ const getVoterId = (): string => {
 
 // Captures data that stays the same even if the user switches browsers on the same phone
 const getHardwareProfile = (): string => {
-  const { width, height, colorDepth, pixelDepth } = screen;
-  const memory = (navigator as any).deviceMemory || 'unknown';
+  const { width, height, colorDepth } = screen;
   const threads = navigator.hardwareConcurrency || 'unknown';
+  const platform = navigator.platform || 'unknown';
   
-  // Get GPU info (very unique to the physical chip)
-  let gpu = 'unknown';
-  try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (gl) {
-      const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info');
-      if (debugInfo) {
-        gpu = (gl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-      }
-    }
-  } catch (e) {}
-
-  return `${width}x${height}|${colorDepth}|${pixelDepth}|${memory}|${threads}|${gpu}`;
+  // Simplified profile to ensure cross-browser consistency (Chrome vs Firefox)
+  // GPU and Memory often differ in Private/Incognito modes
+  return `${width}x${height}|${colorDepth}|${threads}|${platform}`;
 };
 
 // Generates a robust device fingerprint using hardware attributes and Canvas rendering
