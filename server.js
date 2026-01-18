@@ -126,7 +126,7 @@ app.post('/api/vote', rateLimit(100, 60 * 1000), (req, res) => {
     // If someone switches browsers on the same phone, the IP AND the Hardware will match.
     const sameHardwareSameIP = rows.find(r => r.ipAddress === ip && r.hardwareId === hardwareId);
     if (sameHardwareSameIP) {
-      return res.status(403).json({ error: 'This device has already voted (Browser switching detected).' });
+      return res.status(403).json({ error: 'This device has already voted (Browser switching or other unethical activities detected).' });
     }
 
     // C. Network Limit: Allow max 3 DIFFERENT devices per IP (for hotspots)
