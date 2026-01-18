@@ -25,8 +25,11 @@ const getOS = (): string => {
   return 'Other';
 };
 
-const isFirefox = (): boolean => {
-  return /firefox|fxios/i.test(navigator.userAgent);
+const isBlockedBrowser = (): boolean => {
+  const ua = navigator.userAgent;
+  // Block Firefox (Privacy), Opera (VPN), and UC Browser (Proxy)
+  // These browsers allow easy IP bypassing or fingerprint spoofing.
+  return /firefox|fxios|opr\/|opera|ucbrowser/i.test(ua);
 };
 
 // Captures data that stays the same even if the user switches browsers on the same phone
@@ -105,9 +108,9 @@ export const hasVotedInCategory = (categoryId: string): boolean => {
 };
 
 export const castVote = async (candidateId: string, categoryId: string): Promise<{ success: boolean; error?: string }> => {
-  // 0. Security Block: Firefox
-  if (isFirefox()) {
-    return { success: false, error: 'Security Alert: Firefox is not supported. Please use Chrome, Safari, or Edge to vote.' };
+  // 0. Security Block: Restricted Browsers (Firefox, Opera, UC)
+  if (isBlockedBrowser()) {
+    return { success: false, error: 'သူငယ်ချင်းရေ Security Issues လေးတွေရှိတာကြောင့်မို့ ဒီ Browser နဲ့ မ vote ပါနဲ့နော်. Please use Chrome or Safari. ကျေးဇူးပါနော်' };
   }
 
   // 1. Client-side check
