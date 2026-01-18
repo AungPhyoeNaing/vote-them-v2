@@ -17,12 +17,11 @@ const getVoterId = (): string => {
 // Captures data that stays the same even if the user switches browsers on the same phone
 const getHardwareProfile = (): string => {
   const { width, height, colorDepth } = screen;
-  const threads = navigator.hardwareConcurrency || 'unknown';
-  const platform = navigator.platform || 'unknown';
+  const pixelRatio = window.devicePixelRatio || 1;
   
-  // Simplified profile to ensure cross-browser consistency (Chrome vs Firefox)
-  // GPU and Memory often differ in Private/Incognito modes
-  return `${width}x${height}|${colorDepth}|${threads}|${platform}`;
+  // ULTRA-STABLE PROFILE for Anti-Browser-Switching
+  // Uses only physical screen properties which are identical across browsers on the same device.
+  return `${width}x${height}|${colorDepth}|${pixelRatio}`;
 };
 
 // Generates a robust device fingerprint using hardware attributes and Canvas rendering
