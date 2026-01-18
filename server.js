@@ -36,15 +36,17 @@ const db = new sqlite3.Database(dbPath, (err) => {
       candidateId TEXT NOT NULL,
       categoryId TEXT NOT NULL,
       ipAddress TEXT,
+      fingerprint TEXT,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
     // INDEXING: Speeds up the COUNT(*) queries significantly
     db.run(`CREATE INDEX IF NOT EXISTS idx_candidate ON votes(candidateId)`);
 
-    // UNIQUE INDEX: This is the critical fix for race conditions. 
-    // It prevents duplicate votes per IP/Category at the database level.
-    db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_vote ON votes(ipAddress, categoryId)`);
+    // DOUBLE-CHECK UNIQUE INDEX:
+    // This only blocks if BOTH the IP and the Fingerprint match for a category.
+    // This allows two identical phones on different IPs, OR two different phones on the same IP.
+    db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_double_check_vote ON votes(ipAddress, fingerprint, categoryId)`);
   }
 });
 
@@ -95,22 +97,20 @@ app.get('/api/stats', (req, res) => {
 // 2. Cast Vote
 // Applied 100 req/min limit - safe for mobile data/VPS
 app.post('/api/vote', rateLimit(100, 60 * 1000), (req, res) => {
-  const { candidateId, categoryId } = req.body;
+  const { candidateId, categoryId, fingerprint } = req.body;
   const ip = req.ip || req.connection.remoteAddress;
 
-  if (!candidateId || !categoryId) {
-    return res.status(400).json({ error: 'Missing candidateId or categoryId' });
+  if (!candidateId || !categoryId || !fingerprint) {
+    return res.status(400).json({ error: 'Missing voting data or device ID' });
   }
 
-  // ATOMIC INSERT: We no longer "check then act". 
-  // We let the UNIQUE index handle the protection.
-  const sql = `INSERT INTO votes (candidateId, categoryId, ipAddress) VALUES (?, ?, ?)`;
+  // ATOMIC INSERT: We let the DOUBLE CHECK unique index handle the protection.
+  const sql = `INSERT INTO votes (candidateId, categoryId, ipAddress, fingerprint) VALUES (?, ?, ?, ?)`;
   
-  db.run(sql, [candidateId, categoryId, ip], function(err) {
+  db.run(sql, [candidateId, categoryId, ip, fingerprint], function(err) {
     if (err) {
-      // Catch the unique constraint error specifically
       if (err.message.includes('UNIQUE constraint failed')) {
-        return res.status(403).json({ error: 'You have already voted in this category.' });
+        return res.status(403).json({ error: 'Already voted on this device (Double-Check triggered).' });
       }
       console.error(err);
       return res.status(500).json({ error: 'Failed to record vote' });
