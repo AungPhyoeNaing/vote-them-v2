@@ -1,15 +1,74 @@
 import { VoteState, UserVotes } from '../types';
 
-const USER_VOTE_KEY = 'it_fresher_user_votes';
-const API_URL = '/api'; // Proxied to Node server
+const VOTER_ID_KEY = 'it_fresher_voter_id';
 
-// Generates a simple device fingerprint based on hardware/browser attributes
+// Generates or retrieves a persistent unique ID for this browser
+const getVoterId = (): string => {
+  let id = localStorage.getItem(VOTER_ID_KEY);
+  if (!id) {
+    id = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem(VOTER_ID_KEY, id);
+  }
+  return id;
+};
+
+// Captures data that stays the same even if the user switches browsers on the same phone
+const getHardwareProfile = (): string => {
+  const { width, height, colorDepth, pixelDepth } = screen;
+  const memory = (navigator as any).deviceMemory || 'unknown';
+  const threads = navigator.hardwareConcurrency || 'unknown';
+  
+  // Get GPU info (very unique to the physical chip)
+  let gpu = 'unknown';
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (gl) {
+      const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        gpu = (gl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      }
+    }
+  } catch (e) {}
+
+  return `${width}x${height}|${colorDepth}|${pixelDepth}|${memory}|${threads}|${gpu}`;
+};
+
+// Generates a robust device fingerprint using hardware attributes and Canvas rendering
 const getDeviceFingerprint = (): string => {
+  // 1. Basic Hardware & Browser Attributes
   const { userAgent, language, hardwareConcurrency, deviceMemory } = navigator as any;
-  const { width, height, colorDepth } = screen;
+  const { width, height, colorDepth, pixelDepth } = screen;
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   
-  const rawId = `${userAgent}|${language}|${hardwareConcurrency}|${deviceMemory}|${width}x${height}|${colorDepth}|${timezone}`;
+  // 2. Canvas Fingerprinting (Harder to spoof)
+  // Different GPUs and drivers render text/graphics with slight variations
+  let canvasHash = '';
+  try {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      canvas.width = 200;
+      canvas.height = 50;
+      
+      // Text with various features
+      ctx.textBaseline = "top";
+      ctx.font = "14px 'Arial'";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#f60";
+      ctx.fillRect(125,1,62,20);
+      ctx.fillStyle = "#069";
+      ctx.fillText("VoteThem-v2-Fingerprint", 2, 15);
+      ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+      ctx.fillText("VoteThem-v2-Fingerprint", 4, 17);
+      
+      canvasHash = canvas.toDataURL().slice(-100); // Take a slice of the base64 data
+    }
+  } catch (e) {
+    canvasHash = 'canvas-blocked';
+  }
+  
+  const rawId = `${userAgent}|${language}|${hardwareConcurrency}|${deviceMemory}|${width}x${height}|${colorDepth}|${pixelDepth}|${timezone}|${canvasHash}`;
   
   // Simple hash function for the string
   let hash = 0;
@@ -47,7 +106,9 @@ export const castVote = async (candidateId: string, categoryId: string): Promise
       body: JSON.stringify({ 
         candidateId, 
         categoryId, 
-        fingerprint: getDeviceFingerprint() 
+        fingerprint: getDeviceFingerprint(),
+        voterId: getVoterId(),
+        hardwareId: getHardwareProfile()
       }),
     });
 

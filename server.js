@@ -24,12 +24,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
   } else {
     console.log('Connected to the SQLite database.');
     
-    // PERFORMANCE OPTIMIZATION: Enable Write-Ahead Logging (WAL)
-    // This allows simultaneous readers and writers, preventing "Database Locked" errors
-    // during high-traffic voting.
-    db.run('PRAGMA journal_mode = WAL');
-    db.run('PRAGMA synchronous = NORMAL'); // Faster writes with reasonable safety
-    
+    db.serialize(() => {
+      // PERFORMANCE OPTIMIZATION
+      db.run('PRAGMA journal_mode = WAL');
+      db.run('PRAGMA synchronous = NORMAL');
+      
     // Create table if not exists
     db.run(`CREATE TABLE IF NOT EXISTS votes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,20 +36,29 @@ const db = new sqlite3.Database(dbPath, (err) => {
       categoryId TEXT NOT NULL,
       ipAddress TEXT,
       fingerprint TEXT,
+      voterId TEXT,
+      hardwareId TEXT,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // INDEXING: Speeds up the COUNT(*) queries significantly
+    // INDEXING
     db.run(`CREATE INDEX IF NOT EXISTS idx_candidate ON votes(candidateId)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_ip_category ON votes(ipAddress, categoryId)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_fingerprint_category ON votes(fingerprint, categoryId)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_voterid_category ON votes(voterId, categoryId)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_hardware_ip ON votes(hardwareId, ipAddress)`);
 
-    // DOUBLE-CHECK UNIQUE INDEX:
-    // This only blocks if BOTH the IP and the Fingerprint match for a category.
-    db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_double_check_vote ON votes(ipAddress, fingerprint, categoryId)`);
+      console.log('Database initialized successfully.');
+      
+      // Start server only after DB is ready
+      app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+      });
+    });
   }
 });
 
 // --- Simple Rate Limiter ---
-// Protects the VPS from being hammered by scripts
 const rateLimit = (limit, windowMs) => {
   const requests = new Map();
   return (req, res, next) => {
@@ -74,7 +82,7 @@ const rateLimit = (limit, windowMs) => {
 
 // --- API Endpoints ---
 
-// 1. Get Stats (Vote Counts)
+// 1. Get Stats
 app.get('/api/stats', (req, res) => {
   const sql = `SELECT candidateId, COUNT(*) as count FROM votes GROUP BY candidateId`;
   
@@ -94,57 +102,68 @@ app.get('/api/stats', (req, res) => {
 });
 
 // 2. Cast Vote
-// Applied 100 req/min limit - safe for mobile data/VPS
 app.post('/api/vote', rateLimit(100, 60 * 1000), (req, res) => {
-  const { candidateId, categoryId, fingerprint } = req.body;
+  const { candidateId, categoryId, fingerprint, voterId, hardwareId } = req.body;
   const ip = req.ip || req.connection.remoteAddress;
 
-  if (!candidateId || !categoryId || !fingerprint) {
-    return res.status(400).json({ error: 'Missing voting data or device ID' });
+  if (!candidateId || !categoryId || !fingerprint || !voterId || !hardwareId) {
+    return res.status(400).json({ error: 'Missing voting data' });
   }
 
-  // ATOMIC INSERT: We let the DOUBLE CHECK unique index handle the protection.
-  const sql = `INSERT INTO votes (candidateId, categoryId, ipAddress, fingerprint) VALUES (?, ?, ?, ?)`;
+  // 1. TRIPLE-CHECK LOGIC + HARDWARE BINDING
+  const checkSql = `SELECT voterId, fingerprint, ipAddress, hardwareId FROM votes WHERE categoryId = ? AND (voterId = ? OR ipAddress = ?)`;
   
-  db.run(sql, [candidateId, categoryId, ip, fingerprint], function(err) {
-    if (err) {
-      if (err.message.includes('UNIQUE constraint failed')) {
-        return res.status(403).json({ error: 'Already voted on this device (Double-Check triggered).' });
-      }
-      console.error(err);
-      return res.status(500).json({ error: 'Failed to record vote' });
+  db.all(checkSql, [categoryId, voterId, ip], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'DB Error' });
+
+    // A. Absolute Block: Persistent Voter ID match
+    if (rows.some(r => r.voterId === voterId)) {
+      return res.status(403).json({ error: 'You have already voted in this category.' });
     }
-    res.json({ success: true, id: this.lastID });
+
+    // B. ANTI-SWITCHER LOGIC:
+    // If the IP matches, we check the Hardware ID. 
+    // If someone switches browsers on the same phone, the IP AND the Hardware will match.
+    const sameHardwareSameIP = rows.find(r => r.ipAddress === ip && r.hardwareId === hardwareId);
+    if (sameHardwareSameIP) {
+      return res.status(403).json({ error: 'This device has already voted (Browser switching detected).' });
+    }
+
+    // C. Network Limit: Allow max 3 DIFFERENT devices per IP (for hotspots)
+    const ipVotes = rows.filter(r => r.ipAddress === ip).length;
+    if (ipVotes >= 3) {
+      return res.status(403).json({ error: 'Network limit reached (Max 3 friends per hotspot).' });
+    }
+
+    // 2. All checks passed - Insert Vote
+    const insertSql = `INSERT INTO votes (candidateId, categoryId, ipAddress, fingerprint, voterId, hardwareId) VALUES (?, ?, ?, ?, ?, ?)`;
+    db.run(insertSql, [candidateId, categoryId, ip, fingerprint, voterId, hardwareId], function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Failed to record vote' });
+      }
+      res.json({ success: true, id: this.lastID });
+    });
   });
 });
 
 // 3. Reset Database (Admin)
 app.post('/api/reset', (req, res) => {
   const { pin } = req.body;
-  
-  // Basic security: In a real app, use environment variables and hashing
-  // For this event, matching the frontend ADMIN_PIN (2025) is the goal
   if (pin !== '2025') {
     return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
   }
 
-  // Execute within a transaction for safety
   db.serialize(() => {
     db.run(`DELETE FROM votes`, [], (err) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ error: 'Failed to reset database' });
       }
-      // Vacuum cleans up the unused space in the file
       db.run('VACUUM', (err) => {
          if(err) console.error("Vacuum error:", err);
          res.json({ success: true });
       });
     });
   });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`API available at http://localhost:${PORT}/api/stats`);
 });
