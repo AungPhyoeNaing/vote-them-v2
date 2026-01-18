@@ -14,14 +14,34 @@ const getVoterId = (): string => {
   return id;
 };
 
+// Helper to normalize OS for cross-browser matching
+const getOS = (): string => {
+  const ua = navigator.userAgent;
+  if (/Windows/.test(ua)) return 'Windows';
+  if (/Macintosh/.test(ua)) return 'Mac';
+  if (/Android/.test(ua)) return 'Android';
+  if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+  if (/Linux/.test(ua)) return 'Linux';
+  return 'Other';
+};
+
 // Captures data that stays the same even if the user switches browsers on the same phone
 const getHardwareProfile = (): string => {
-  const { width, height, colorDepth } = screen;
-  const pixelRatio = window.devicePixelRatio || 1;
+  // 1. Screen Resolution (Usually consistent across browsers on same device)
+  const { width, height } = screen;
   
-  // ULTRA-STABLE PROFILE for Anti-Browser-Switching
-  // Uses only physical screen properties which are identical across browsers on the same device.
-  return `${width}x${height}|${colorDepth}|${pixelRatio}`;
+  // 2. CPU Concurrency (Supported in modern Chrome & Firefox)
+  const threads = navigator.hardwareConcurrency || 'unknown';
+  
+  // 3. Timezone (e.g., "Asia/Yangon")
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  // 4. OS Platform (Normalized)
+  const os = getOS();
+
+  // CROSS-BROWSER FINGERPRINT
+  // We explicitly exclude pixelRatio and colorDepth as they can vary by browser settings/zoom.
+  return `${width}x${height}|${os}|${timezone}|${threads}`;
 };
 
 // Generates a robust device fingerprint using hardware attributes and Canvas rendering
