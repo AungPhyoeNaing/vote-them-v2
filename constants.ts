@@ -1,8 +1,16 @@
 import { Candidate, CategoryId } from './types';
 
 // Helper to generate a consistent image URL
-const getImg = (id: number, width: number, height: number) => 
-  `https://picsum.photos/id/${id}/${width}/${height}`;
+// TODO: In production, change this to: 'https://assets.totumdy.com/candidates'
+// const BASE_URL = '/images/candidates'; 
+const BASE_URL = 'https://assets.totumdy.com/candidates'; 
+const TOTAL_IMAGES = 38;
+
+const getImg = (id: number, width?: number, height?: number) => {
+  // Map the ID to one of our local images (1.jpg to 37.jpg)
+  const imageIndex = (id % TOTAL_IMAGES) + 1;
+  return `${BASE_URL}/${imageIndex}.jpg`;
+};
 
 export const CANDIDATES: Candidate[] = [
   // --- KING Candidates (1-15) ---
