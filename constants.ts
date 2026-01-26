@@ -6,80 +6,77 @@ import { Candidate, CategoryId } from './types';
 const BASE_URL = 'https://asset.totumdy.com/candidates'; 
 const TOTAL_IMAGES = 38;
 
-const getImg = (id: number, width?: number, height?: number) => {
-  // Map the ID to one of our local images (1.jpg to 37.jpg)
-  const imageIndex = (id % TOTAL_IMAGES) + 1;
-  return `${BASE_URL}/${imageIndex}.jpg`;
+// Simplified image getter - direct mapping
+const getImg = (index: number) => {
+  // Ensure we fall back gracefully if index > total (though we plan to match exact files)
+  const safeIndex = ((index - 1) % TOTAL_IMAGES) + 1;
+  return `${BASE_URL}/${safeIndex}.jpg`;
 };
 
 export const CANDIDATES: Candidate[] = [
-  // --- KING Candidates (1-15) ---
-  { id: 'k1', number: '01', name: 'Alex Johnson', class: 'IT-A 2025', categoryId: CategoryId.KING, imageUrl: getImg(11, 400, 500), quote: "Innovation distinguishes between a leader and a follower.", bio: "Passionate about cloud computing and cybersecurity." },
-  { id: 'k2', number: '02', name: 'Michael Chen', class: 'CS-B 2025', categoryId: CategoryId.KING, imageUrl: getImg(12, 400, 500), quote: "Code is poetry, leadership is art.", bio: "Full-stack developer by night, student leader by day." },
-  { id: 'k3', number: '03', name: 'David Smith', class: 'SE-A 2025', categoryId: CategoryId.KING, imageUrl: getImg(13, 400, 500), quote: "Simplicity is the ultimate sophistication.", bio: "An advocate for clean code and cleaner campuses." },
-  { id: 'k4', number: '04', name: 'James Wilson', class: 'IT-B 2025', categoryId: CategoryId.KING, imageUrl: getImg(14, 400, 500), quote: "Stay hungry, stay foolish.", bio: "Aiming to bring more hackathons to campus." },
-  { id: 'k5', number: '05', name: 'Daniel Kim', class: 'AI-A 2025', categoryId: CategoryId.KING, imageUrl: getImg(15, 400, 500), quote: "The future belongs to those who prepare for it today.", bio: "Machine Learning enthusiast." },
-  { id: 'k6', number: '06', name: 'Robert Taylor', class: 'CS-A 2025', categoryId: CategoryId.KING, imageUrl: getImg(16, 400, 500), quote: "Success is not final, failure is not fatal.", bio: "President of the Coding Club." },
-  { id: 'k7', number: '07', name: 'William Brown', class: 'SE-B 2025', categoryId: CategoryId.KING, imageUrl: getImg(17, 400, 500), quote: "Knowledge is power.", bio: "Dedicated to peer tutoring programs." },
-  { id: 'k8', number: '08', name: 'Joseph Davis', class: 'NET-A 2025', categoryId: CategoryId.KING, imageUrl: getImg(18, 400, 500), quote: "Network your net worth.", bio: "Cisco certified dreamer." },
-  { id: 'k9', number: '09', name: 'Charles Miller', class: 'IT-A 2025', categoryId: CategoryId.KING, imageUrl: getImg(19, 400, 500), quote: "Just do it.", bio: "Sports captain and tech geek." },
-  { id: 'k10', number: '10', name: 'Thomas Anderson', class: 'CS-B 2025', categoryId: CategoryId.KING, imageUrl: getImg(20, 400, 500), quote: "There is no spoon.", bio: "Virtual reality explorer." },
-  { id: 'k11', number: '11', name: 'Christopher Lee', class: 'DS-A 2025', categoryId: CategoryId.KING, imageUrl: getImg(21, 400, 500), quote: "Data is the new oil.", bio: "Big data analyst in the making." },
-  { id: 'k12', number: '12', name: 'Paul Martinez', class: 'WEB-B 2025', categoryId: CategoryId.KING, imageUrl: getImg(22, 400, 500), quote: "Make it pop.", bio: "Frontend wizard." },
-  { id: 'k13', number: '13', name: 'Mark White', class: 'AI-B 2025', categoryId: CategoryId.KING, imageUrl: getImg(23, 400, 500), quote: "Automate everything.", bio: "Building bots to make life easier." },
-  { id: 'k14', number: '14', name: 'Donald Harris', class: 'SE-A 2025', categoryId: CategoryId.KING, imageUrl: getImg(24, 400, 500), quote: "Quality over quantity.", bio: "QA testing expert." },
-  { id: 'k15', number: '15', name: 'George Clark', class: 'IT-B 2025', categoryId: CategoryId.KING, imageUrl: getImg(25, 400, 500), quote: "Keep moving forward.", bio: "Always learning, always growing." },
+  // --- KING Candidates (1-13) ---
+  { id: 'k1', number: '01', name: 'အောင်သူဖြိုး', class: '01', categoryId: CategoryId.KING, imageUrl: getImg(1), quote: "Innovation distinguishes between a leader and a follower.", bio: "Passionate about cloud computing and cybersecurity." },
+  { id: 'k2', number: '02', name: 'ကောင်းခန့်ဇော်', class: '02', categoryId: CategoryId.KING, imageUrl: getImg(2), quote: "Code is poetry, leadership is art.", bio: "Full-stack developer by night, student leader by day." },
+  { id: 'k3', number: '03', name: 'သံလွင်ထက်နောင်', class: '03', categoryId: CategoryId.KING, imageUrl: getImg(3), quote: "Simplicity is the ultimate sophistication.", bio: "An advocate for clean code and cleaner campuses." },
+  { id: 'k4', number: '04', name: 'ရဲရင့်အောင်', class: '04', categoryId: CategoryId.KING, imageUrl: getImg(4), quote: "Stay hungry, stay foolish.", bio: "Aiming to bring more hackathons to campus." },
+  { id: 'k5', number: '05', name: 'မင်းထက်ကျော်', class: '05', categoryId: CategoryId.KING, imageUrl: getImg(5), quote: "The future belongs to those who prepare for it today.", bio: "Machine Learning enthusiast." },
+  { id: 'k6', number: '06', name: 'ထက်နိုင်သန့်', class: '06', categoryId: CategoryId.KING, imageUrl: getImg(6), quote: "Success is not final, failure is not fatal.", bio: "President of the Coding Club." },
+  { id: 'k7', number: '07', name: 'သတိုးစံ', class: '07', categoryId: CategoryId.KING, imageUrl: getImg(7), quote: "Knowledge is power.", bio: "Dedicated to peer tutoring programs." },
+  { id: 'k8', number: '08', name: 'စိုးမြတ်မင်း', class: '08', categoryId: CategoryId.KING, imageUrl: getImg(8), quote: "Network your net worth.", bio: "Cisco certified dreamer." },
+  { id: 'k9', number: '09', name: 'ဟန်ထူးဇော်', class: '09', categoryId: CategoryId.KING, imageUrl: getImg(9), quote: "Just do it.", bio: "Sports captain and tech geek." },
+  { id: 'k10', number: '10', name: 'အောင်ဘုန်းပြည့်', class: '10', categoryId: CategoryId.KING, imageUrl: getImg(10), quote: "There is no spoon.", bio: "Virtual reality explorer." },
+  { id: 'k11', number: '11', name: 'ဖြိုးဝေယံဇော်', class: '11', categoryId: CategoryId.KING, imageUrl: getImg(11), quote: "Data is the new oil.", bio: "Big data analyst in the making." },
+  { id: 'k12', number: '12', name: 'ဇေယျာထူးနိုင်', class: '12', categoryId: CategoryId.KING, imageUrl: getImg(12), quote: "Make it pop.", bio: "Frontend wizard." },
+  { id: 'k13', number: '13', name: 'အောင်ထက်ပိုင်', class: '13', categoryId: CategoryId.KING, imageUrl: getImg(13), quote: "Automate everything.", bio: "Building bots to make life easier." },
 
-  // --- QUEEN Candidates (16-30) ---
-  { id: 'q1', number: '16', name: 'Sarah Lee', class: 'IT-A 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(30, 400, 500), quote: "Empowerment through technology.", bio: "Leading the Women in Tech initiative." },
-  { id: 'q2', number: '17', name: 'Emily Davis', class: 'CS-A 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(31, 400, 500), quote: "Dream big, work hard.", bio: "Balancing algorithms and athletics." },
-  { id: 'q3', number: '18', name: 'Jessica Wong', class: 'SE-B 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(32, 400, 500), quote: "Design is intelligence made visible.", bio: "UX enthusiast." },
-  { id: 'q4', number: '19', name: 'Amanda Martin', class: 'DS-A 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(33, 400, 500), quote: "Believe you can and you're halfway there.", bio: "Student council secretary." },
-  { id: 'q5', number: '20', name: 'Jennifer Garcia', class: 'WEB-A 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(34, 400, 500), quote: "Creativity takes courage.", bio: "Graphic design lead." },
-  { id: 'q6', number: '21', name: 'Nicole Thompson', class: 'AI-B 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(35, 400, 500), quote: "Be the change.", bio: "Environmental club president." },
-  { id: 'q7', number: '22', name: 'Stephanie Martinez', class: 'NET-A 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(36, 400, 500), quote: "Connect, collaborate, create.", bio: "Networking specialist." },
-  { id: 'q8', number: '23', name: 'Lauren Robinson', class: 'IT-B 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(37, 400, 500), quote: "Grace under pressure.", bio: "Public speaking champion." },
-  { id: 'q9', number: '24', name: 'Rachel Clark', class: 'CS-B 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(38, 400, 500), quote: "Logic will get you from A to B. Imagination will take you everywhere.", bio: "Algorithm ace." },
-  { id: 'q10', number: '25', name: 'Megan Rodriguez', class: 'SE-A 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(39, 400, 500), quote: "Shoot for the stars.", bio: "Astronomy club member." },
-  { id: 'q11', number: '26', name: 'Ashley Walker', class: 'AI-A 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(40, 400, 500), quote: "Artificial Intelligence, Real Results.", bio: "AI researcher." },
-  { id: 'q12', number: '27', name: 'Elizabeth Hall', class: 'WEB-B 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(41, 400, 500), quote: "Life is what you make it.", bio: "Content creator." },
-  { id: 'q13', number: '28', name: 'Brittany Allen', class: 'DS-B 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(42, 400, 500), quote: "Visualizing success.", bio: "Data viz expert." },
-  { id: 'q14', number: '29', name: 'Danielle Young', class: 'IT-A 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(43, 400, 500), quote: "Kindness matters.", bio: "Volunteer coordinator." },
-  { id: 'q15', number: '30', name: 'Courtney King', class: 'CS-A 2025', categoryId: CategoryId.QUEEN, imageUrl: getImg(44, 400, 500), quote: "Coding creates worlds.", bio: "Game developer." },
+  // --- QUEEN Candidates (1-13) ---
+  { id: 'q1', number: '01', name: 'ဖူးပြည့်စုံမောင်', class: '01', categoryId: CategoryId.QUEEN, imageUrl: getImg(14), quote: "Empowerment through technology.", bio: "Leading the Women in Tech initiative." },
+  { id: 'q2', number: '02', name: 'အိကိုကို', class: '02', categoryId: CategoryId.QUEEN, imageUrl: getImg(15), quote: "Dream big, work hard.", bio: "Balancing algorithms and athletics." },
+  { id: 'q3', number: '03', name: 'ဖြူဖြူပွင့်ချယ်', class: '03', categoryId: CategoryId.QUEEN, imageUrl: getImg(16), quote: "Design is intelligence made visible.", bio: "UX enthusiast." },
+  { id: 'q4', number: '04', name: 'ဝိုင်းချစ်မှူး', class: '04', categoryId: CategoryId.QUEEN, imageUrl: getImg(17), quote: "Believe you can and you're halfway there.", bio: "Student council secretary." },
+  { id: 'q5', number: '05', name: 'အေးသက်မွန်', class: '05', categoryId: CategoryId.QUEEN, imageUrl: getImg(18), quote: "Creativity takes courage.", bio: "Graphic design lead." },
+  { id: 'q6', number: '06', name: 'နန်းစံဖွေး', class: '06', categoryId: CategoryId.QUEEN, imageUrl: getImg(19), quote: "Be the change.", bio: "Environmental club president." },
+  { id: 'q7', number: '07', name: 'ဟေဇင်မိုးမြင့်ထက်', class: '07', categoryId: CategoryId.QUEEN, imageUrl: getImg(20), quote: "Connect, collaborate, create.", bio: "Networking specialist." },
+  { id: 'q8', number: '08', name: 'နန်းမိုနွံဟွမ်', class: '08', categoryId: CategoryId.QUEEN, imageUrl: getImg(21), quote: "Grace under pressure.", bio: "Public speaking champion." },
+  { id: 'q9', number: '09', name: 'ဆုမြတ်နိုးဦး', class: '09', categoryId: CategoryId.QUEEN, imageUrl: getImg(22), quote: "Logic will get you from A to B. Imagination will take you everywhere.", bio: "Algorithm ace." },
+  { id: 'q10', number: '10', name: 'နွယ်နီဝင်း', class: '10', categoryId: CategoryId.QUEEN, imageUrl: getImg(23), quote: "Shoot for the stars.", bio: "Astronomy club member." },
+  { id: 'q11', number: '11', name: 'သီရိချို', class: '11', categoryId: CategoryId.QUEEN, imageUrl: getImg(24), quote: "Artificial Intelligence, Real Results.", bio: "AI researcher." },
+  { id: 'q12', number: '12', name: 'ယဉ်မူအောင်', class: '12', categoryId: CategoryId.QUEEN, imageUrl: getImg(25), quote: "Life is what you make it.", bio: "Content creator." },
+  { id: 'q13', number: '13', name: 'ချစ်သုဝေ', class: '13', categoryId: CategoryId.QUEEN, imageUrl: getImg(26), quote: "Visualizing success.", bio: "Data viz expert." },
 
   // --- MISTER Candidates (31-45) ---
-  { id: 'm1', number: '31', name: 'Ryan Gosling (Junior)', class: 'AI-A 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(50, 400, 500), quote: "I'm just Ken... enough.", bio: "Bringing charm and AI expertise." },
-  { id: 'm2', number: '32', name: 'Kevin Hart (Lite)', class: 'NET-B 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(51, 400, 500), quote: "Laughter is the best debugger.", bio: "Class clown." },
-  { id: 'm3', number: '33', name: 'Justin T.', class: 'SE-A 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(52, 400, 500), quote: "Bringing sexy back to code.", bio: "Musician and coder." },
-  { id: 'm4', number: '34', name: 'Brandon Stark', class: 'DS-A 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(53, 400, 500), quote: "I see everything.", bio: "Data analyst with vision." },
-  { id: 'm5', number: '35', name: 'Peter Parker', class: 'WEB-A 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(54, 400, 500), quote: "With great power comes great responsibility.", bio: "Web crawler." },
-  { id: 'm6', number: '36', name: 'Tony Stark', class: 'AI-B 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(55, 400, 500), quote: "I am Iron Man.", bio: "Tech genius billionaire (in making)." },
-  { id: 'm7', number: '37', name: 'Steve Rogers', class: 'CS-A 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(56, 400, 500), quote: "I can do this all day.", bio: "Class representative." },
-  { id: 'm8', number: '38', name: 'Bruce Wayne', class: 'IT-B 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(57, 400, 500), quote: "I'm Batman.", bio: "Cybersecurity specialist." },
-  { id: 'm9', number: '39', name: 'Clark Kent', class: 'SE-B 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(58, 400, 500), quote: "Truth, justice, and clean code.", bio: "Journalist and dev." },
-  { id: 'm10', number: '40', name: 'Barry Allen', class: 'NET-A 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(59, 400, 500), quote: "Fastest coder alive.", bio: "Track team captain." },
-  { id: 'm11', number: '41', name: 'Arthur Curry', class: 'DS-B 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(60, 400, 500), quote: "King of the (data) seas.", bio: "Marine biology enthusiast." },
-  { id: 'm12', number: '42', name: 'Hal Jordan', class: 'AI-A 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(61, 400, 500), quote: "In brightest day...", bio: "Pilot and programmer." },
-  { id: 'm13', number: '43', name: 'Oliver Queen', class: 'WEB-B 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(62, 400, 500), quote: "You have failed this city.", bio: "Full stack archer." },
-  { id: 'm14', number: '44', name: 'Wade Wilson', class: 'CS-B 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(63, 400, 500), quote: "Maximum effort.", bio: "Unconventional troubleshooter." },
-  { id: 'm15', number: '45', name: 'Logan H.', class: 'IT-A 2025', categoryId: CategoryId.MISTER, imageUrl: getImg(64, 400, 500), quote: "I'm the best there is at what I do.", bio: "Legacy system maintainer." },
+  { id: 'm1', number: '31', name: 'Ryan Gosling (Junior)', class: '31', categoryId: CategoryId.MISTER, imageUrl: getImg(27), quote: "I'm just Ken... enough.", bio: "Bringing charm and AI expertise." },
+  { id: 'm2', number: '32', name: 'Kevin Hart (Lite)', class: '32', categoryId: CategoryId.MISTER, imageUrl: getImg(28), quote: "Laughter is the best debugger.", bio: "Class clown." },
+  { id: 'm3', number: '33', name: 'Justin T.', class: '33', categoryId: CategoryId.MISTER, imageUrl: getImg(29), quote: "Bringing sexy back to code.", bio: "Musician and coder." },
+  { id: 'm4', number: '34', name: 'Brandon Stark', class: '34', categoryId: CategoryId.MISTER, imageUrl: getImg(30), quote: "I see everything.", bio: "Data analyst with vision." },
+  { id: 'm5', number: '35', name: 'Peter Parker', class: '35', categoryId: CategoryId.MISTER, imageUrl: getImg(31), quote: "With great power comes great responsibility.", bio: "Web crawler." },
+  { id: 'm6', number: '36', name: 'Tony Stark', class: '36', categoryId: CategoryId.MISTER, imageUrl: getImg(32), quote: "I am Iron Man.", bio: "Tech genius billionaire (in making)." },
+  { id: 'm7', number: '37', name: 'Steve Rogers', class: '37', categoryId: CategoryId.MISTER, imageUrl: getImg(33), quote: "I can do this all day.", bio: "Class representative." },
+  { id: 'm8', number: '38', name: 'Bruce Wayne', class: '38', categoryId: CategoryId.MISTER, imageUrl: getImg(34), quote: "I'm Batman.", bio: "Cybersecurity specialist." },
+  { id: 'm9', number: '39', name: 'Clark Kent', class: '39', categoryId: CategoryId.MISTER, imageUrl: getImg(35), quote: "Truth, justice, and clean code.", bio: "Journalist and dev." },
+  { id: 'm10', number: '40', name: 'Barry Allen', class: '40', categoryId: CategoryId.MISTER, imageUrl: getImg(36), quote: "Fastest coder alive.", bio: "Track team captain." },
+  { id: 'm11', number: '41', name: 'Arthur Curry', class: '41', categoryId: CategoryId.MISTER, imageUrl: getImg(37), quote: "King of the (data) seas.", bio: "Marine biology enthusiast." },
+  { id: 'm12', number: '42', name: 'Hal Jordan', class: '42', categoryId: CategoryId.MISTER, imageUrl: getImg(38), quote: "In brightest day...", bio: "Pilot and programmer." },
+  { id: 'm13', number: '43', name: 'Oliver Queen', class: '43', categoryId: CategoryId.MISTER, imageUrl: getImg(39), quote: "You have failed this city.", bio: "Full stack archer." },
+  { id: 'm14', number: '44', name: 'Wade Wilson', class: '44', categoryId: CategoryId.MISTER, imageUrl: getImg(40), quote: "Maximum effort.", bio: "Unconventional troubleshooter." },
+  { id: 'm15', number: '45', name: 'Logan H.', class: '45', categoryId: CategoryId.MISTER, imageUrl: getImg(41), quote: "I'm the best there is at what I do.", bio: "Legacy system maintainer." },
 
   // --- MISS Candidates (46-60) ---
-  { id: 'ms1', number: '46', name: 'Zendaya Two', class: 'DS-A 2025', categoryId: CategoryId.MISS, imageUrl: getImg(70, 400, 500), quote: "Data tells a story.", bio: "Data Science major." },
-  { id: 'ms2', number: '47', name: 'Taylor S.', class: 'WEB-A 2025', categoryId: CategoryId.MISS, imageUrl: getImg(71, 400, 500), quote: "Shake it off, code it up.", bio: "Web wizard." },
-  { id: 'ms3', number: '48', name: 'Ariana G.', class: 'CS-A 2025', categoryId: CategoryId.MISS, imageUrl: getImg(72, 400, 500), quote: "Thank u, next (bug).", bio: "Vocal about variable naming." },
-  { id: 'ms4', number: '49', name: 'Selena G.', class: 'SE-A 2025', categoryId: CategoryId.MISS, imageUrl: getImg(73, 400, 500), quote: "Kill 'em with kindness.", bio: "Community manager." },
-  { id: 'ms5', number: '50', name: 'Billie E.', class: 'IT-B 2025', categoryId: CategoryId.MISS, imageUrl: getImg(74, 400, 500), quote: "Duh.", bio: "Alternative thinker." },
-  { id: 'ms6', number: '51', name: 'Dua L.', class: 'AI-A 2025', categoryId: CategoryId.MISS, imageUrl: getImg(75, 400, 500), quote: "New rules.", bio: "Defining new protocols." },
-  { id: 'ms7', number: '52', name: 'Katy P.', class: 'NET-B 2025', categoryId: CategoryId.MISS, imageUrl: getImg(76, 400, 500), quote: "Hear me roar.", bio: "Network administrator." },
-  { id: 'ms8', number: '53', name: 'Rihanna F.', class: 'CS-B 2025', categoryId: CategoryId.MISS, imageUrl: getImg(77, 400, 500), quote: "Shine bright like a diamond.", bio: "UI/UX polished perfection." },
-  { id: 'ms9', number: '54', name: 'Beyonce K.', class: 'SE-B 2025', categoryId: CategoryId.MISS, imageUrl: getImg(78, 400, 500), quote: "Run the world (girls).", bio: "Project Manager." },
-  { id: 'ms10', number: '55', name: 'Adele A.', class: 'DS-B 2025', categoryId: CategoryId.MISS, imageUrl: getImg(79, 400, 500), quote: "Hello, it's me.", bio: "Communication specialist." },
-  { id: 'ms11', number: '56', name: 'Lady G.', class: 'WEB-B 2025', categoryId: CategoryId.MISS, imageUrl: getImg(80, 400, 500), quote: "Born this way.", bio: "Advocate for accessibility." },
-  { id: 'ms12', number: '57', name: 'Miley C.', class: 'IT-A 2025', categoryId: CategoryId.MISS, imageUrl: getImg(81, 400, 500), quote: "Wrecking ball.", bio: "Breaking monoliths into microservices." },
-  { id: 'ms13', number: '58', name: 'Demi L.', class: 'AI-B 2025', categoryId: CategoryId.MISS, imageUrl: getImg(82, 400, 500), quote: "Confident.", bio: "Self-assured coder." },
-  { id: 'ms14', number: '59', name: 'Sia F.', class: 'NET-A 2025', categoryId: CategoryId.MISS, imageUrl: getImg(83, 400, 500), quote: "Unstoppable.", bio: "Resilient backend engineer." },
-  { id: 'ms15', number: '60', name: 'Halsey', class: 'CS-A 2025', categoryId: CategoryId.MISS, imageUrl: getImg(84, 400, 500), quote: "Without me.", bio: "Indispensable team member." },
+  { id: 'ms1', number: '46', name: 'Zendaya Two', class: '46', categoryId: CategoryId.MISS, imageUrl: getImg(42), quote: "Data tells a story.", bio: "Data Science major." },
+  { id: 'ms2', number: '47', name: 'Taylor S.', class: '47', categoryId: CategoryId.MISS, imageUrl: getImg(43), quote: "Shake it off, code it up.", bio: "Web wizard." },
+  { id: 'ms3', number: '48', name: 'Ariana G.', class: '48', categoryId: CategoryId.MISS, imageUrl: getImg(44), quote: "Thank u, next (bug).", bio: "Vocal about variable naming." },
+  { id: 'ms4', number: '49', name: 'Selena G.', class: '49', categoryId: CategoryId.MISS, imageUrl: getImg(45), quote: "Kill 'em with kindness.", bio: "Community manager." },
+  { id: 'ms5', number: '50', name: 'Billie E.', class: '50', categoryId: CategoryId.MISS, imageUrl: getImg(46), quote: "Duh.", bio: "Alternative thinker." },
+  { id: 'ms6', number: '51', name: 'Dua L.', class: '51', categoryId: CategoryId.MISS, imageUrl: getImg(47), quote: "New rules.", bio: "Defining new protocols." },
+  { id: 'ms7', number: '52', name: 'Katy P.', class: '52', categoryId: CategoryId.MISS, imageUrl: getImg(48), quote: "Hear me roar.", bio: "Network administrator." },
+  { id: 'ms8', number: '53', name: 'Rihanna F.', class: '53', categoryId: CategoryId.MISS, imageUrl: getImg(49), quote: "Shine bright like a diamond.", bio: "UI/UX polished perfection." },
+  { id: 'ms9', number: '54', name: 'Beyonce K.', class: '54', categoryId: CategoryId.MISS, imageUrl: getImg(50), quote: "Run the world (girls).", bio: "Project Manager." },
+  { id: 'ms10', number: '55', name: 'Adele A.', class: '55', categoryId: CategoryId.MISS, imageUrl: getImg(51), quote: "Hello, it's me.", bio: "Communication specialist." },
+  { id: 'ms11', number: '56', name: 'Lady G.', class: '56', categoryId: CategoryId.MISS, imageUrl: getImg(52), quote: "Born this way.", bio: "Advocate for accessibility." },
+  { id: 'ms12', number: '57', name: 'Miley C.', class: '57', categoryId: CategoryId.MISS, imageUrl: getImg(53), quote: "Wrecking ball.", bio: "Breaking monoliths into microservices." },
+  { id: 'ms13', number: '58', name: 'Demi L.', class: '58', categoryId: CategoryId.MISS, imageUrl: getImg(54), quote: "Confident.", bio: "Self-assured coder." },
+  { id: 'ms14', number: '59', name: 'Sia F.', class: '59', categoryId: CategoryId.MISS, imageUrl: getImg(55), quote: "Unstoppable.", bio: "Resilient backend engineer." },
+  { id: 'ms15', number: '60', name: 'Halsey', class: '60', categoryId: CategoryId.MISS, imageUrl: getImg(56), quote: "Without me.", bio: "Indispensable team member." },
 ];
 
 export const CATEGORIES = [
@@ -89,4 +86,4 @@ export const CATEGORIES = [
   { id: CategoryId.MISS, label: 'MISS', color: 'bg-purple-600' },
 ];
 
-export const ADMIN_PIN = "2025";
+export const ADMIN_PIN = "2026";

@@ -3,6 +3,7 @@ import { CATEGORIES, CANDIDATES } from '../constants';
 import { CategoryId, Candidate } from '../types';
 import { castVote, hasVotedInCategory } from '../services/voteService';
 import { CheckCircle2, ChevronRight, Lock, Sparkles, X, Heart, Star, Crown, Zap } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 interface VotingInterfaceProps {
   onAdminClick: () => void;
@@ -17,16 +18,15 @@ const triggerConfetti = () => {
   };
 
   function fire(particleRatio: number, opts: any) {
-    if ((window as any).confetti) {
-        (window as any).confetti({
-        ...defaults,
-        ...opts,
-        particleCount: Math.floor(count * particleRatio)
-        });
-    }
+    confetti({
+      ...defaults,
+      ...opts,
+      particleCount: Math.floor(count * particleRatio)
+    });
   }
 
   fire(0.25, { spread: 26, startVelocity: 55 });
+
   fire(0.2, { spread: 60 });
   fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
   fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
@@ -70,7 +70,7 @@ const LazyImageCard = ({ candidate, onClick, isVoted, gradient, index }: any) =>
             </div>
             
             <div className="p-3 text-center">
-            <h3 className="text-black font-extrabold truncate text-lg tracking-tight leading-tight">{candidate.name}</h3>
+            <h3 className="text-black font-extrabold text-lg leading-relaxed py-1">{candidate.name}</h3>
             <p className="text-black text-xs font-bold uppercase tracking-wider bg-yellow-300 inline-block px-3 py-1 rounded-full border-2 border-black mt-2 group-hover:bg-yellow-400 transition-colors transform rotate-1">
                 {candidate.class}
             </p>
@@ -286,10 +286,10 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
             {/* Content */}
             <div className="p-6 pt-0 flex flex-col relative z-10 -mt-10 overflow-y-auto no-scrollbar">
                <div className="text-center">
-                 <span className={`inline-block px-4 py-1.5 mt-1 rounded-full text-sm font-black text-black ${activeColor} mb-3 border-2 border-black shadow-neo transform -rotate-2`}>
-                    #{selectedCandidate.number} • {selectedCandidate.class}
+                 <span className={`inline-block px-4 py-1.5 mt-1 rounded-full text-md font-black text-black ${activeColor} mb-3 border-2 border-black shadow-neo transform -rotate-2`}>
+                    #{selectedCandidate.number}
                  </span>
-                 <h3 className="text-4xl font-black text-black leading-none mb-4 tracking-tighter drop-shadow-sm">
+                 <h3 className="text-4xl font-black text-black leading-snug mb-4 drop-shadow-sm">
                     {selectedCandidate.name}
                  </h3>
                </div>

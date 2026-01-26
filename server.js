@@ -1,6 +1,7 @@
 import express from 'express';
 import sqlite3 from 'sqlite3';
 import cors from 'cors';
+import compression from 'compression';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -11,10 +12,22 @@ const app = express();
 const PORT = 3001;
 
 // Middleware
+app.use(compression()); // Enable GZIP compression
 app.use(cors());
 app.use(express.json());
 // Trust proxy is required if behind Nginx (like on aaPanel) to get real IPs
 app.set('trust proxy', true);
+
+// Serve Static Files (Frontend) with Caching Strategy
+app.use(express.static(join(__dirname, 'dist'), {
+  maxAge: '7d', // Cache images/assets for 7 days
+  setHeaders: (res, path) => {
+    // HTML files should not be cached (or short cache) to ensure updates are seen
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }
+}));
 
 // Database Setup
 const dbPath = join(__dirname, 'votes.db');
@@ -150,7 +163,7 @@ app.post('/api/vote', rateLimit(100, 60 * 1000), (req, res) => {
 // 3. Reset Database (Admin)
 app.post('/api/reset', (req, res) => {
   const { pin } = req.body;
-  if (pin !== '2025') {
+  if (pin !== '2026') {
     return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
   }
 
@@ -166,4 +179,9 @@ app.post('/api/reset', (req, res) => {
       });
     });
   });
+});
+
+// SPA Fallback: Serve index.html for any unknown routes
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
