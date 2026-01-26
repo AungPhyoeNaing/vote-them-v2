@@ -3,7 +3,7 @@ import { Candidate, CategoryId } from './types';
 // Helper to generate a consistent image URL
 // TODO: In production, change this to: 'https://assets.totumdy.com/candidates'
 // const BASE_URL = '/images/candidates'; 
-const BASE_URL = 'https://assets.totumdy.com/candidates'; 
+const BASE_URL = 'https://asset.totumdy.com/candidates'; 
 const TOTAL_IMAGES = 38;
 
 const getImg = (id: number, width?: number, height?: number) => {
