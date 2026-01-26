@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { VoteState, CategoryId, Candidate } from '../types';
-import { CANDIDATES, CATEGORIES } from '../constants';
+import { CANDIDATES, CATEGORIES, ADMIN_PIN } from '../constants';
 import { getVoteStats, resetAllVotes } from '../services/voteService';
-import { LogOut, LayoutDashboard, Users, Trophy, Activity, RefreshCw, Sparkles } from 'lucide-react';
+import { LogOut, LayoutDashboard, Users, Trophy, Activity, RefreshCw, Sparkles, Lock, Unlock } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -12,13 +12,43 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [votes, setVotes] = useState<VoteState>({});
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSystemOpen, setIsSystemOpen] = useState(false);
 
   const fetchData = async (silent = false) => {
     if (!silent) setIsRefreshing(true);
     const data = await getVoteStats();
     setVotes(data);
+    
+    // Also fetch system status
+    try {
+        const res = await fetch('/api/system-status');
+        const status = await res.json();
+        setIsSystemOpen(status.isOpen);
+    } catch (e) { console.error("Failed to fetch status"); }
+
     setLastUpdated(new Date());
     if (!silent) setIsRefreshing(false);
+  };
+
+  const toggleSystem = async () => {
+      const newState = !isSystemOpen;
+      if (!confirm(`Are you sure you want to ${newState ? 'OPEN' : 'CLOSE'} the voting lines?`)) return;
+      
+      try {
+        const res = await fetch('/api/system-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: ADMIN_PIN, isOpen: newState })
+        });
+        const data = await res.json();
+        if (data.success) {
+            setIsSystemOpen(data.isOpen);
+        } else {
+            alert("Failed: " + data.error);
+        }
+      } catch (e) {
+          alert("Network Error");
+      }
   };
 
   useEffect(() => {
@@ -145,25 +175,48 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <div className="text-6xl font-black text-black tracking-tight drop-shadow-sm">~{Math.ceil(totalVotes / 1.5)}</div>
           </div>
 
-          <div className="bg-white col-span-2 p-6 rounded-3xl border-4 border-black shadow-neo flex flex-row items-center justify-between">
-            <div>
+          <div className="bg-white col-span-2 p-6 rounded-3xl border-4 border-black shadow-neo flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                 <RefreshCw size={16} className="text-black" />
-                 <span className="text-sm font-black text-slate-500 uppercase tracking-wider">System Status</span>
+                 {isSystemOpen ? <Unlock size={16} className="text-emerald-600" /> : <Lock size={16} className="text-red-600" />}
+                 <span className="text-sm font-black text-slate-500 uppercase tracking-wider">Access Control</span>
               </div>
                <div className="flex items-center gap-2">
-                 <div className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-xs font-black border-2 border-emerald-800 shadow-sm flex items-center gap-1">
-                    <Sparkles size={12} /> Server Active
+                 <div className={`px-3 py-1 rounded-full text-xs font-black border-2 shadow-sm flex items-center gap-1 transition-colors ${
+                     isSystemOpen 
+                     ? 'bg-emerald-100 text-emerald-800 border-emerald-800' 
+                     : 'bg-red-100 text-red-800 border-red-800'
+                 }`}>
+                    {isSystemOpen ? <Sparkles size={12} /> : <Lock size={12} />}
+                    {isSystemOpen ? 'VOTING LIVE' : 'VOTING LOCKED'}
                  </div>
-                 <div className="text-xs text-black font-mono font-bold hidden sm:block bg-slate-100 px-2 py-1 rounded border border-black">Port: 3001</div>
+                 <button 
+                    onClick={toggleSystem}
+                    className="text-xs font-bold underline hover:no-underline px-2"
+                 >
+                    {isSystemOpen ? 'Close Access' : 'Open Access'}
+                 </button>
                </div>
             </div>
-            <button 
-                onClick={() => { if(confirm("DANGER: Wipe all database records?")) resetAllVotes() }}
-                className="px-5 py-3 text-xs font-black text-white bg-red-500 hover:bg-red-600 rounded-xl border-2 border-black shadow-neo hover:translate-y-1 hover:shadow-none transition-all uppercase tracking-wide"
-             >
-               Reset DB
-             </button>
+            
+            <div className="flex gap-2">
+                 <button 
+                    onClick={toggleSystem}
+                    className={`px-4 py-3 text-xs font-black text-white rounded-xl border-2 border-black shadow-neo hover:translate-y-1 hover:shadow-none transition-all uppercase tracking-wide flex items-center gap-2 ${
+                        isSystemOpen ? 'bg-orange-400 hover:bg-orange-500' : 'bg-emerald-500 hover:bg-emerald-600'
+                    }`}
+                >
+                {isSystemOpen ? <Lock size={14}/> : <Unlock size={14}/>}
+                {isSystemOpen ? 'LOCK VOTING' : 'OPEN VOTING'}
+                </button>
+                
+                <button 
+                    onClick={() => { if(confirm("DANGER: Wipe all database records?")) resetAllVotes() }}
+                    className="px-4 py-3 text-xs font-black text-white bg-red-500 hover:bg-red-600 rounded-xl border-2 border-black shadow-neo hover:translate-y-1 hover:shadow-none transition-all uppercase tracking-wide"
+                >
+                Reset DB
+                </button>
+            </div>
           </div>
         </div>
 

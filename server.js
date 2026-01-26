@@ -18,6 +18,49 @@ app.use(express.json());
 // Trust proxy is required if behind Nginx (like on aaPanel) to get real IPs
 app.set('trust proxy', true);
 
+// --- ACCESS CONTROL SYSTEM ---
+let isSystemOpen = false; // Default: CLOSED (Privacy Mode)
+const ADMIN_PIN = "2026";
+
+// Helper: Parse Cookies
+const getCookie = (req, name) => {
+  const header = req.headers.cookie;
+  if (!header) return null;
+  const match = header.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+};
+
+// Middleware: Gatekeeper
+app.use((req, res, next) => {
+  // 1. Always allow API endpoints and the Admin Login page
+  if (req.path.startsWith('/api/') || req.path === '/admin') {
+    return next();
+  }
+
+  // 2. Check Admin Access
+  const adminToken = getCookie(req, 'admin_session');
+  const isAdmin = adminToken === 'authorized_2026'; // Simple token check
+
+  // 3. If System is Open OR User is Admin -> Proceed (Serve Frontend)
+  if (isSystemOpen || isAdmin) {
+    return next();
+  }
+
+  // 4. System Closed & Not Admin -> Block Access
+  // If requesting HTML (main page), show Closed Page
+  if (req.accepts('html') || req.path === '/') {
+    return res.sendFile(join(__dirname, 'server-pages', 'closed.html'));
+  }
+
+  // Block bundles/assets to prevent scraping candidate data
+  res.status(403).send('Access Denied: Voting is currently closed.');
+});
+
+// Serve Admin Login Page
+app.get('/admin', (req, res) => {
+  res.sendFile(join(__dirname, 'server-pages', 'login.html'));
+});
+
 // Serve Static Files (Frontend) with Caching Strategy
 app.use(express.static(join(__dirname, 'dist'), {
   maxAge: '7d', // Cache images/assets for 7 days
@@ -116,6 +159,10 @@ app.get('/api/stats', (req, res) => {
 
 // 2. Cast Vote
 app.post('/api/vote', rateLimit(100, 60 * 1000), (req, res) => {
+  if (!isSystemOpen) {
+    return res.status(403).json({ error: 'Voting is currently closed.' });
+  }
+
   const { candidateId, categoryId, fingerprint, voterId, hardwareId } = req.body;
   const ip = req.ip || req.connection.remoteAddress;
 
@@ -179,6 +226,40 @@ app.post('/api/reset', (req, res) => {
       });
     });
   });
+});
+
+// 4. Admin Authentication
+app.post('/api/admin-auth', (req, res) => {
+  const { pin } = req.body;
+  if (pin === ADMIN_PIN) {
+    // Set a simple cookie (valid for 24 hours)
+    res.cookie('admin_session', 'authorized_2026', { 
+      httpOnly: true, 
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: 'lax' // Allow top-level navigation
+    });
+    return res.json({ success: true });
+  }
+  res.status(401).json({ error: 'Invalid PIN' });
+});
+
+// 5. System Status (Get & Toggle)
+app.get('/api/system-status', (req, res) => {
+  res.json({ isOpen: isSystemOpen });
+});
+
+app.post('/api/system-status', (req, res) => {
+  const { pin, isOpen } = req.body;
+  if (pin !== ADMIN_PIN) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  
+  if (typeof isOpen === 'boolean') {
+    isSystemOpen = isOpen;
+    console.log(`[System] Voting status changed to: ${isSystemOpen ? 'OPEN' : 'CLOSED'}`);
+    return res.json({ success: true, isOpen: isSystemOpen });
+  }
+  res.status(400).json({ error: 'Invalid status' });
 });
 
 // SPA Fallback: Serve index.html for any unknown routes

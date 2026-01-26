@@ -86,6 +86,23 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSystemOpen, setIsSystemOpen] = useState(true);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch('/api/system-status');
+        const data = await res.json();
+        if (typeof data.isOpen === 'boolean') {
+            setIsSystemOpen(data.isOpen);
+        }
+      } catch (e) { console.error("Status polling error", e); }
+    };
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const status: Record<string, boolean> = {};
@@ -229,30 +246,47 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
 
       {/* Main Content */}
       <main className="max-w-md mx-auto px-4 mt-8">
-        <div className="mb-8 text-center animate-fade-in">
-           {votedCategories[activeCategory] ? (
-             <div className="bg-emerald-100 inline-flex items-center gap-2 px-6 py-3 rounded-full text-black font-black border-2 border-black shadow-neo animate-pulse-fast text-lg">
-                <CheckCircle2 size={24} className="text-emerald-600 fill-white" /> VOTE REGISTERED!
-             </div>
-           ) : (
-             <p className="text-black font-bold bg-white inline-block px-5 py-2 rounded-full text-base border-2 border-black shadow-neo-sm transform rotate-1">
-               👇 ပုံလေးနှိပ်ပြီး Vote ပါ သူငယ်ချင်း
-             </p>
-           )}
-        </div>
+        {!isSystemOpen ? (
+            <div className="text-center py-12 px-6 bg-white rounded-3xl border-4 border-black shadow-neo animate-slide-up">
+                <div className="inline-block bg-yellow-300 p-5 rounded-full border-2 border-black shadow-neo mb-6 animate-bounce">
+                    <Lock size={48} className="text-black" />
+                </div>
+                <h2 className="text-3xl font-black text-black mb-3 tracking-tight">VOTING CLOSED</h2>
+                <p className="text-slate-600 font-bold mb-6">
+                    The voting lines are currently paused. Please wait for the admin to open them.
+                </p>
+                <div className="inline-block bg-slate-100 px-4 py-2 rounded-xl border-2 border-black font-mono text-xs font-bold text-slate-400">
+                    STATUS: <span className="text-red-500">LOCKED</span>
+                </div>
+            </div>
+        ) : (
+            <>
+                <div className="mb-8 text-center animate-fade-in">
+                {votedCategories[activeCategory] ? (
+                    <div className="bg-emerald-100 inline-flex items-center gap-2 px-6 py-3 rounded-full text-black font-black border-2 border-black shadow-neo animate-pulse-fast text-lg">
+                        <CheckCircle2 size={24} className="text-emerald-600 fill-white" /> VOTE REGISTERED!
+                    </div>
+                ) : (
+                    <p className="text-black font-bold bg-white inline-block px-5 py-2 rounded-full text-base border-2 border-black shadow-neo-sm transform rotate-1">
+                    👇 ပုံလေးနှိပ်ပြီး Vote ပါ သူငယ်ချင်း
+                    </p>
+                )}
+                </div>
 
-        <div className="grid grid-cols-2 gap-4 pb-10">
-          {filteredCandidates.map((candidate, idx) => (
-            <LazyImageCard 
-                key={candidate.id}
-                candidate={candidate}
-                index={idx}
-                isVoted={votedCategories[activeCategory]}
-                onClick={() => handleVote(candidate)}
-                gradient={activeGradient}
-            />
-          ))}
-        </div>
+                <div className="grid grid-cols-2 gap-4 pb-10">
+                {filteredCandidates.map((candidate, idx) => (
+                    <LazyImageCard 
+                        key={candidate.id}
+                        candidate={candidate}
+                        index={idx}
+                        isVoted={votedCategories[activeCategory]}
+                        onClick={() => handleVote(candidate)}
+                        gradient={activeGradient}
+                    />
+                ))}
+                </div>
+            </>
+        )}
       </main>
 
       {/* Fun Expanded Profile Modal */}
