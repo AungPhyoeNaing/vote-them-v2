@@ -20,6 +20,7 @@ app.set('trust proxy', true);
 
 // --- ACCESS CONTROL SYSTEM ---
 let isSystemOpen = false; // Default: CLOSED (Privacy Mode)
+let maxVotesPerIp = 3; // Default: Strict (Max 3 devices per IP)
 const ADMIN_PIN = "2026";
 
 // Helper: Parse Cookies
@@ -189,10 +190,10 @@ app.post('/api/vote', rateLimit(100, 60 * 1000), (req, res) => {
       return res.status(403).json({ error: 'This device has already voted (Browser switching or other unethical activities detected).' });
     }
 
-    // C. Network Limit: Allow max 3 DIFFERENT devices per IP (for hotspots)
+    // C. Network Limit: Dynamic check (Default 3)
     const ipVotes = rows.filter(r => r.ipAddress === ip).length;
-    if (ipVotes >= 3) {
-      return res.status(403).json({ error: 'Network limit reached (Max 3 friends per hotspot).' });
+    if (ipVotes >= maxVotesPerIp) {
+      return res.status(403).json({ error: `Network limit reached (Max ${maxVotesPerIp} friends per hotspot).` });
     }
 
     // 2. All checks passed - Insert Vote
@@ -245,21 +246,28 @@ app.post('/api/admin-auth', (req, res) => {
 
 // 5. System Status (Get & Toggle)
 app.get('/api/system-status', (req, res) => {
-  res.json({ isOpen: isSystemOpen });
+  res.json({ isOpen: isSystemOpen, maxVotesPerIp });
 });
 
 app.post('/api/system-status', (req, res) => {
-  const { pin, isOpen } = req.body;
+  const { pin, isOpen, newMaxVotes } = req.body;
   if (pin !== ADMIN_PIN) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   
+  // Update Open/Closed Status
   if (typeof isOpen === 'boolean') {
     isSystemOpen = isOpen;
     console.log(`[System] Voting status changed to: ${isSystemOpen ? 'OPEN' : 'CLOSED'}`);
-    return res.json({ success: true, isOpen: isSystemOpen });
   }
-  res.status(400).json({ error: 'Invalid status' });
+
+  // Update Dynamic IP Limit
+  if (typeof newMaxVotes === 'number' && newMaxVotes > 0) {
+    maxVotesPerIp = newMaxVotes;
+    console.log(`[System] Max votes per IP changed to: ${maxVotesPerIp}`);
+  }
+
+  return res.json({ success: true, isOpen: isSystemOpen, maxVotesPerIp });
 });
 
 // SPA Fallback: Serve index.html for any unknown routes

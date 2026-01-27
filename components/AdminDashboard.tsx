@@ -13,6 +13,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSystemOpen, setIsSystemOpen] = useState(false);
+  const [maxVotesPerIp, setMaxVotesPerIp] = useState(3);
 
   const fetchData = async (silent = false) => {
     if (!silent) setIsRefreshing(true);
@@ -24,6 +25,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         const res = await fetch('/api/system-status');
         const status = await res.json();
         setIsSystemOpen(status.isOpen);
+        if (status.maxVotesPerIp) setMaxVotesPerIp(status.maxVotesPerIp);
     } catch (e) { console.error("Failed to fetch status"); }
 
     setLastUpdated(new Date());
@@ -49,6 +51,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       } catch (e) {
           alert("Network Error");
       }
+  };
+
+  const changeIpLimit = async (newLimit: number) => {
+    try {
+      const res = await fetch('/api/system-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: ADMIN_PIN, newMaxVotes: newLimit })
+      });
+      const data = await res.json();
+      if (data.success) {
+          setMaxVotesPerIp(data.maxVotesPerIp);
+      }
+    } catch (e) {
+        console.error("Failed to update IP limit");
+    }
   };
 
   useEffect(() => {
@@ -197,6 +215,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     {isSystemOpen ? 'Close Access' : 'Open Access'}
                  </button>
                </div>
+            </div>
+
+            {/* Dynamic IP Limit Slider */}
+            <div className="w-full sm:w-auto flex-1 py-4 sm:py-0 sm:px-4 border-t-2 border-b-2 sm:border-t-0 sm:border-b-0 sm:border-l-2 sm:border-r-2 border-slate-100 my-4 sm:my-0 sm:mx-4">
+              <div className="flex justify-between items-center mb-1">
+                 <label className="text-xs font-black text-slate-500 uppercase">Panic Mode: Votes/IP</label>
+                 <span className={`px-2 py-0.5 rounded text-xs font-bold border border-black ${maxVotesPerIp > 5 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                    {maxVotesPerIp} {maxVotesPerIp === 1 ? 'Vote' : 'Votes'}
+                 </span>
+              </div>
+              <input 
+                type="range" 
+                min="1" 
+                max="20" 
+                step="1"
+                value={maxVotesPerIp}
+                onChange={(e) => changeIpLimit(parseInt(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-black"
+              />
+              <p className="text-[10px] text-slate-400 font-bold mt-1">Slide right if hotspots get blocked</p>
             </div>
             
             <div className="flex gap-2">
