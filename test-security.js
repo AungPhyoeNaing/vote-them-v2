@@ -25,7 +25,7 @@ async function resetDB() {
         const res = await fetch(`${API_URL}/reset`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: '2025' })
+            body: JSON.stringify({ pin: '45644779' })
         });
         const data = await res.json();
         console.log("Reset result:", data);

@@ -21,7 +21,7 @@ app.set('trust proxy', true);
 // --- ACCESS CONTROL SYSTEM ---
 let isSystemOpen = false; // Default: CLOSED (Privacy Mode)
 let maxVotesPerIp = 3; // Default: Strict (Max 3 devices per IP)
-const ADMIN_PIN = "2026";
+const ADMIN_PIN = "45644779";
 
 // Helper: Parse Cookies
 const getCookie = (req, name) => {
@@ -40,7 +40,7 @@ app.use((req, res, next) => {
 
   // 2. Check Admin Access
   const adminToken = getCookie(req, 'admin_session');
-  const isAdmin = adminToken === 'authorized_2026'; // Simple token check
+  const isAdmin = adminToken === 'authorized_45644779'; // Simple token check
 
   // 3. If System is Open OR User is Admin -> Proceed (Serve Frontend)
   if (isSystemOpen || isAdmin) {
@@ -211,7 +211,7 @@ app.post('/api/vote', rateLimit(100, 60 * 1000), (req, res) => {
 // 3. Reset Database (Admin)
 app.post('/api/reset', (req, res) => {
   const { pin } = req.body;
-  if (pin !== '2026') {
+  if (pin !== ADMIN_PIN) {
     return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
   }
 
@@ -234,7 +234,7 @@ app.post('/api/admin-auth', (req, res) => {
   const { pin } = req.body;
   if (pin === ADMIN_PIN) {
     // Set a simple cookie (valid for 24 hours)
-    res.cookie('admin_session', 'authorized_2026', { 
+    res.cookie('admin_session', 'authorized_45644779', { 
       httpOnly: true, 
       maxAge: 24 * 60 * 60 * 1000,
       sameSite: 'lax' // Allow top-level navigation

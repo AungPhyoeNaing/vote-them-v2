@@ -200,7 +200,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
                     </div>
                     <div className="flex flex-col">
                     <h1 className="text-2xl font-black text-black leading-none tracking-tight drop-shadow-sm">
-                        IT Fresher Welcome!!!
+                        CEIT Fresher Welcome!!!
                     </h1>
                     <span className="text-xs uppercase font-bold text-black tracking-widest bg-yellow-300 p-1 mt-1 rounded-sm transform -rotate-1 inline-block w-max border border-black">Voteလိုက်နော်</span>
                     </div>
