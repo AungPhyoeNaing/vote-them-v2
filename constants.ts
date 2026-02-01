@@ -1,18 +1,13 @@
 import { Candidate, CategoryId } from './types';
 
 // Helper to generate a consistent image URL
-// TODO: In production, change this to: 'https://assets.totumdy.com/candidates'
-// const BASE_URL = '/images/candidates'; 
-const BASE_URL = 'https://asset.totumdy.com/candidates'; 
-const TOTAL_IMAGES = 38;
+const BASE_URL = '/images/candidates';
+const TOTAL_IMAGES = 56;
 
 // Simplified image getter - direct mapping
 const getImg = (index: number) => {
-  // Ensure we fall back gracefully if index > total (though we plan to match exact files)
-  const safeIndex = ((index - 1) % TOTAL_IMAGES) + 1;
-  return `${BASE_URL}/${safeIndex}.jpg`;
+  return `${BASE_URL}/${index}.jpg`;
 };
-
 export const CANDIDATES: Candidate[] = [
   // --- KING Candidates (1-13) ---
   { id: 'k1', number: '01', name: 'အောင်သူဖြိုး', class: '01', categoryId: CategoryId.KING, imageUrl: getImg(1), quote: "Innovation distinguishes between a leader and a follower.", bio: "Passionate about cloud computing and cybersecurity." },
