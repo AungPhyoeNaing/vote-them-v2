@@ -177,14 +177,11 @@ export const resetAllVotes = async () => {
   const confirmed = confirm("Are you sure? This will wipe the database permanently.");
   if (!confirmed) return;
 
-  const pin = prompt("Please enter the Admin PIN to confirm reset:");
-  if (!pin) return;
-
   try {
     const response = await fetch(`${API_URL}/reset`, { 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin })
+      body: JSON.stringify({})
     });
     const data = await response.json();
 

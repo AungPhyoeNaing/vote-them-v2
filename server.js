@@ -224,9 +224,9 @@ app.post('/api/vote', rateLimit(100, 60 * 1000), (req, res) => {
 
 // 3. Reset Database (Admin)
 app.post('/api/reset', (req, res) => {
-  const { pin } = req.body;
-  if (pin !== ADMIN_PIN) {
-    return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
+  const adminToken = getCookie(req, 'admin_session');
+  if (adminToken !== 'authorized_45644779') {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   db.serialize(() => {
@@ -265,11 +265,13 @@ app.get('/api/system-status', (req, res) => {
 });
 
 app.post('/api/system-status', (req, res) => {
-  const { pin, isOpen, newMaxVotes } = req.body;
-  if (pin !== ADMIN_PIN) {
+  const adminToken = getCookie(req, 'admin_session');
+  if (adminToken !== 'authorized_45644779') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   
+  const { isOpen, newMaxVotes } = req.body;
+
   // Update Open/Closed Status
   if (typeof isOpen === 'boolean') {
     isSystemOpen = isOpen;

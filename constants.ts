@@ -70,5 +70,3 @@ export const CATEGORIES = [
   { id: CategoryId.MISTER, label: 'MISTER', color: 'bg-teal-600' },
   { id: CategoryId.MISS, label: 'MISS', color: 'bg-purple-600' },
 ];
-
-export const ADMIN_PIN = "45644779";

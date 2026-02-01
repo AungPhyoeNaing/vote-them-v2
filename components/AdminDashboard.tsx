@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { VoteState, CategoryId, Candidate } from '../types';
-import { CANDIDATES, CATEGORIES, ADMIN_PIN } from '../constants';
+import { CANDIDATES, CATEGORIES } from '../constants';
 import { getVoteStats, resetAllVotes } from '../services/voteService';
 import { LogOut, LayoutDashboard, Users, Trophy, Activity, RefreshCw, Sparkles, Lock, Unlock } from 'lucide-react';
 
@@ -40,7 +40,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         const res = await fetch('/api/system-status', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: ADMIN_PIN, isOpen: newState })
+            body: JSON.stringify({ isOpen: newState })
         });
         const data = await res.json();
         if (data.success) {
@@ -58,7 +58,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       const res = await fetch('/api/system-status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pin: ADMIN_PIN, newMaxVotes: newLimit })
+          body: JSON.stringify({ newMaxVotes: newLimit })
       });
       const data = await res.json();
       if (data.success) {

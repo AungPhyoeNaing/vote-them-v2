@@ -1,6 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import VotingInterface from './components/VotingInterface';
-import { ADMIN_PIN } from './constants';
 import { School, AlertCircle, ArrowLeft } from 'lucide-react';
 
 const AdminDashboard = React.lazy(() => import('./components/AdminDashboard'));
@@ -27,14 +26,25 @@ const App: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const handleAdminLogin = (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === ADMIN_PIN) {
-      window.location.hash = 'dashboard';
-      setView('admin');
-      setError('');
-      setPin('');
-    } else {
+    try {
+      const res = await fetch('/api/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        window.location.hash = 'dashboard';
+        setView('admin');
+        setError('');
+        setPin('');
+      } else {
+        throw new Error('Incorrect PIN');
+      }
+    } catch (err) {
       setError('Incorrect PIN');
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 500);
