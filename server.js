@@ -118,6 +118,20 @@ const db = new sqlite3.Database(dbPath, (err) => {
 // --- Simple Rate Limiter ---
 const rateLimit = (limit, windowMs) => {
   const requests = new Map();
+  
+  // Cleanup interval: Remove entries older than windowMs
+  setInterval(() => {
+    const now = Date.now();
+    for (const [ip, timestamps] of requests.entries()) {
+      const validTimestamps = timestamps.filter(t => now - t < windowMs);
+      if (validTimestamps.length === 0) {
+        requests.delete(ip);
+      } else {
+        requests.set(ip, validTimestamps);
+      }
+    }
+  }, windowMs); // Run cleanup every windowMs
+
   return (req, res, next) => {
     const ip = req.ip || req.connection.remoteAddress;
     const now = Date.now();
@@ -246,6 +260,7 @@ app.post('/api/admin-auth', (req, res) => {
 
 // 5. System Status (Get & Toggle)
 app.get('/api/system-status', (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=5');
   res.json({ isOpen: isSystemOpen, maxVotesPerIp });
 });
 

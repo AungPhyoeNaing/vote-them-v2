@@ -3,14 +3,14 @@ import { CATEGORIES, CANDIDATES } from '../constants';
 import { CategoryId, Candidate } from '../types';
 import { castVote, hasVotedInCategory } from '../services/voteService';
 import { CheckCircle2, ChevronRight, Lock, Sparkles, X, Heart, Star, Crown, Zap } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 interface VotingInterfaceProps {
   onAdminClick: () => void;
 }
 
 // Trigger Confetti
-const triggerConfetti = () => {
+const triggerConfetti = async () => {
+  const confetti = (await import('canvas-confetti')).default;
   const count = 200;
   const defaults = {
     origin: { y: 0.7 },
@@ -100,7 +100,7 @@ const VotingInterface: React.FC<VotingInterfaceProps> = ({ onAdminClick }) => {
     };
 
     checkStatus();
-    const interval = setInterval(checkStatus, 4000);
+    const interval = setInterval(checkStatus, 15000);
     return () => clearInterval(interval);
   }, []);
 

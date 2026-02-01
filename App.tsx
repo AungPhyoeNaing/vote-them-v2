@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import VotingInterface from './components/VotingInterface';
-import AdminDashboard from './components/AdminDashboard';
 import { ADMIN_PIN } from './constants';
 import { School, AlertCircle, ArrowLeft } from 'lucide-react';
+
+const AdminDashboard = React.lazy(() => import('./components/AdminDashboard'));
 
 const App: React.FC = () => {
   const [view, setView] = useState<'user' | 'admin-login' | 'admin'>('user');
@@ -42,7 +43,11 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     if (view === 'admin') {
-      return <AdminDashboard onLogout={() => { window.location.hash = ''; setView('user'); }} />;
+      return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-black text-2xl">Loading Dashboard...</div>}>
+          <AdminDashboard onLogout={() => { window.location.hash = ''; setView('user'); }} />
+        </Suspense>
+      );
     }
 
     if (view === 'admin-login') {
