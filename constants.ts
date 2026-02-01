@@ -22,12 +22,11 @@ export const CANDIDATES: Candidate[] = [
   { id: 'k5', number: '05', name: 'မင်းထက်ကျော်', class: '05', categoryId: CategoryId.KING, imageUrl: getImg(5), quote: "The future belongs to those who prepare for it today.", bio: "Machine Learning enthusiast." },
   { id: 'k6', number: '06', name: 'ထက်နိုင်သန့်', class: '06', categoryId: CategoryId.KING, imageUrl: getImg(6), quote: "Success is not final, failure is not fatal.", bio: "President of the Coding Club." },
   { id: 'k7', number: '07', name: 'သတိုးစံ', class: '07', categoryId: CategoryId.KING, imageUrl: getImg(7), quote: "Knowledge is power.", bio: "Dedicated to peer tutoring programs." },
-  { id: 'k8', number: '08', name: 'စိုးမြတ်မင်း', class: '08', categoryId: CategoryId.KING, imageUrl: getImg(8), quote: "Network your net worth.", bio: "Cisco certified dreamer." },
-  { id: 'k9', number: '09', name: 'ဟန်ထူးဇော်', class: '09', categoryId: CategoryId.KING, imageUrl: getImg(9), quote: "Just do it.", bio: "Sports captain and tech geek." },
-  { id: 'k10', number: '10', name: 'အောင်ဘုန်းပြည့်', class: '10', categoryId: CategoryId.KING, imageUrl: getImg(10), quote: "There is no spoon.", bio: "Virtual reality explorer." },
-  { id: 'k11', number: '11', name: 'ဖြိုးဝေယံဇော်', class: '11', categoryId: CategoryId.KING, imageUrl: getImg(11), quote: "Data is the new oil.", bio: "Big data analyst in the making." },
-  { id: 'k12', number: '12', name: 'ဇေယျာထူးနိုင်', class: '12', categoryId: CategoryId.KING, imageUrl: getImg(12), quote: "Make it pop.", bio: "Frontend wizard." },
-  { id: 'k13', number: '13', name: 'အောင်ထက်ပိုင်', class: '13', categoryId: CategoryId.KING, imageUrl: getImg(13), quote: "Automate everything.", bio: "Building bots to make life easier." },
+  { id: 'k8', number: '08', name: 'ဟန်ထူးဇော်', class: '08', categoryId: CategoryId.KING, imageUrl: getImg(8), quote: "Network your net worth.", bio: "Cisco certified dreamer." },
+  { id: 'k9', number: '09', name: 'အောင်ဘုန်းပြည့်', class: '09', categoryId: CategoryId.KING, imageUrl: getImg(9), quote: "Just do it.", bio: "Sports captain and tech geek." },
+  { id: 'k10', number: '10', name: 'ဖြိုးဝေယံဇော်', class: '10', categoryId: CategoryId.KING, imageUrl: getImg(10), quote: "There is no spoon.", bio: "Virtual reality explorer." },
+  { id: 'k11', number: '11', name: 'ဇေယျာထူးနိုင်', class: '11', categoryId: CategoryId.KING, imageUrl: getImg(11), quote: "Data is the new oil.", bio: "Big data analyst in the making." },
+  { id: 'k12', number: '12', name: 'အောင်ထက်ပိုင်', class: '12', categoryId: CategoryId.KING, imageUrl: getImg(12), quote: "Make it pop.", bio: "Frontend wizard." },
 
   // --- QUEEN Candidates (1-13) ---
   { id: 'q1', number: '01', name: 'ဖူးပြည့်စုံမောင်', class: '01', categoryId: CategoryId.QUEEN, imageUrl: getImg(14), quote: "Empowerment through technology.", bio: "Leading the Women in Tech initiative." },
